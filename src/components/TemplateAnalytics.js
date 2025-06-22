@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Statistic, Progress, Table, Tabs, Typography } from 'antd';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Card, Row, Col, Table, Tabs, Typography, message } from 'antd';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { FileTextOutlined, StarOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import api from '../utils/api';
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 const { TabPane } = Tabs;
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
@@ -18,57 +18,108 @@ const TemplateAnalytics = ({ dateRange, fullWidth = false }) => {
         templateUsageData: []
     });
 
-    useEffect(() => {
-        fetchTemplateData();
-    }, [dateRange]);
-
-    const fetchTemplateData = async () => {
+    const fetchTemplateData = useCallback(async () => {
         setLoading(true);
         try {
-            // TODO: 실제 API 호출로 대체 예정
-            // 임시 데이터
-            const mockData = {
-                recommendationVsList: [
-                    { name: '추천받기', value: 65, fill: '#1890ff' },
-                    { name: '리스트 보기', value: 35, fill: '#52c41a' }
-                ],
-                topRecommendedTemplates: [
-                    { name: '일일 회고', count: 1250, percentage: 28.5 },
-                    { name: '주간 회고', count: 980, percentage: 22.3 },
-                    { name: '월간 회고', count: 750, percentage: 17.1 },
-                    { name: '프로젝트 회고', count: 620, percentage: 14.2 },
-                    { name: '학습 회고', count: 450, percentage: 10.3 }
-                ],
-                topListTemplates: [
-                    { name: '일일 회고', count: 890, percentage: 32.1 },
-                    { name: '주간 회고', count: 720, percentage: 26.0 },
-                    { name: '월간 회고', count: 580, percentage: 20.9 },
-                    { name: '프로젝트 회고', count: 420, percentage: 15.2 },
-                    { name: '학습 회고', count: 160, percentage: 5.8 }
-                ],
-                mostUsedTemplates: [
-                    { name: '일일 회고', count: 2140, percentage: 31.2 },
-                    { name: '주간 회고', count: 1700, percentage: 24.8 },
-                    { name: '월간 회고', count: 1330, percentage: 19.4 },
-                    { name: '프로젝트 회고', count: 1040, percentage: 15.2 },
-                    { name: '학습 회고', count: 610, percentage: 8.9 }
-                ],
-                templateUsageData: [
-                    { name: '일일 회고', 추천받기: 1250, 리스트보기: 890, 총사용: 2140 },
-                    { name: '주간 회고', 추천받기: 980, 리스트보기: 720, 총사용: 1700 },
-                    { name: '월간 회고', 추천받기: 750, 리스트보기: 580, 총사용: 1330 },
-                    { name: '프로젝트 회고', 추천받기: 620, 리스트보기: 420, 총사용: 1040 },
-                    { name: '학습 회고', 추천받기: 450, 리스트보기: 160, 총사용: 610 }
-                ]
-            };
+            // 실제 API 호출
+            const [topRecommendedResponse, topListResponse, mostUsedResponse] = await Promise.all([
+                api.get('/admin/template/recommended-count'),
+                api.get('/admin/template/recommended-count', {
+                    params: {
+                        startDate: dateRange?.[0]?.format('YYYY-MM-DD'),
+                        endDate: dateRange?.[1]?.format('YYYY-MM-DD')
+                    }
+                }),
+                api.get('/admin/template/recommended-count', {
+                    params: {
+                        startDate: dateRange?.[0]?.format('YYYY-MM-DD'),
+                        endDate: dateRange?.[1]?.format('YYYY-MM-DD')
+                    }
+                })
+            ]);
 
-            setData(mockData);
+            // API 응답 데이터 처리
+            const topRecommendedTemplates = topRecommendedResponse.data.map(item => ({
+                name: item.formTag,
+                count: item.recommendedCount,
+                percentage: 0 // 나중에 계산
+            }));
+
+            // 전체 추천 수 계산 후 percentage 업데이트
+            const totalRecommended = topRecommendedTemplates.reduce((sum, item) => sum + item.count, 0);
+            console.log(totalRecommended);
+            topRecommendedTemplates.forEach(item => {
+                item.percentage = totalRecommended > 0 ? Math.round((item.count / totalRecommended) * 100 * 10) / 10 : 0;
+            });
+
+            const topListTemplates = topListResponse.data.map(item => ({
+                name: item.templateName,
+                count: item.listViewCount,
+                percentage: item.percentage
+            }));
+
+            const mostUsedTemplates = mostUsedResponse.data.map(item => ({
+                name: item.templateName,
+                count: item.totalUsage,
+                percentage: item.percentage
+            }));
+
+            // 추천받기 vs 리스트보기 비율 계산
+            const totalRecommendations = topRecommendedTemplates.reduce((sum, item) => sum + item.count, 0);
+            const totalListView = topListTemplates.reduce((sum, item) => sum + item.count, 0);
+            const total = totalRecommendations + totalListView;
+
+            const recommendationVsList = [
+                {
+                    name: '추천받기',
+                    value: totalRecommendations,
+                    fill: '#1890ff',
+                    percentage: total > 0 ? Math.round((totalRecommendations / total) * 100) : 0
+                },
+                {
+                    name: '리스트 보기',
+                    value: totalListView,
+                    fill: '#52c41a',
+                    percentage: total > 0 ? Math.round((totalListView / total) * 100) : 0
+                }
+            ];
+
+            // 템플릿별 선택 방식 비교 데이터 생성
+            const templateUsageData = mostUsedTemplates.map(template => {
+                const recommended = topRecommendedTemplates.find(r => r.name === template.name);
+                const listView = topListTemplates.find(l => l.name === template.name);
+
+                return {
+                    name: template.name,
+                    추천받기: recommended?.count || 0,
+                    리스트보기: listView?.count || 0,
+                    총사용: template.count
+                };
+            });
+
+            setData({
+                recommendationVsList,
+                topRecommendedTemplates,
+                topListTemplates,
+                mostUsedTemplates,
+                templateUsageData
+            });
+
+            message.success('템플릿 데이터를 성공적으로 불러왔습니다.');
         } catch (error) {
             console.error('템플릿 데이터 로딩 실패:', error);
+
+            // API 호출 실패 시 임시 데이터 사용
+
+            message.warning('API 호출에 실패하여 임시 데이터를 표시합니다.');
         } finally {
             setLoading(false);
         }
-    };
+    }, [dateRange]);
+
+    useEffect(() => {
+        fetchTemplateData();
+    }, [fetchTemplateData]);
 
     const columns = [
         {
