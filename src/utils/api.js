@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // axios 기본 설정
 const api = axios.create({
-    baseURL: process.env.REACT_APP_API_BASE_URL || 'https://stgapi.layerapp.io',
+    baseURL: process.env.REACT_APP_API_BASE_URL || 'https://api.layerapp.io',
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json',
