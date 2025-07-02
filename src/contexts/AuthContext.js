@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import api from '../utils/api';
 
 const AuthContext = createContext();
 
@@ -27,18 +28,22 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
     }, []);
 
-    const login = async (username, password) => {
+    const login = async (password) => {
         try {
-            // TODO: 실제 API 호출로 대체 예정
-            if (username === 'admin' && password === 'admin123') {
-                const userData = { username, role: 'admin' };
-                localStorage.setItem('admin_token', 'dummy_token');
-                localStorage.setItem('admin_user', JSON.stringify(userData));
+            const response = await api.get('/admin/login', {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-ADMIN-TOKEN': password
+                }
+            });
+
+            if (response.status === 200) {
+                localStorage.setItem('admin_token', password);
                 setIsAuthenticated(true);
-                setUser(userData);
                 return { success: true };
             } else {
-                return { success: false, message: '아이디 또는 비밀번호가 올바르지 않습니다.' };
+                const errorData = await response.json();
+                return { success: false, message: errorData.message || '아이디 또는 비밀번호가 올바르지 않습니다.' };
             }
         } catch (error) {
             return { success: false, message: '로그인 중 오류가 발생했습니다.' };

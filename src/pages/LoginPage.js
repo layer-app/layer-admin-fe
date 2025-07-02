@@ -13,7 +13,7 @@ const LoginPage = () => {
     const onFinish = async (values) => {
         setLoading(true);
         try {
-            const result = await login(values.username, values.password);
+            const result = await login(values.password);
             if (result.success) {
                 message.success('로그인되었습니다.');
                 navigate('/dashboard');
@@ -43,11 +43,11 @@ const LoginPage = () => {
                     >
                         <Form.Item
                             name="username"
-                            rules={[{ required: true, message: '아이디를 입력해주세요!' }]}
                         >
                             <Input
                                 prefix={<UserOutlined />}
-                                placeholder="아이디"
+                                placeholder="아이디 x"
+                                disabled
                             />
                         </Form.Item>
 
