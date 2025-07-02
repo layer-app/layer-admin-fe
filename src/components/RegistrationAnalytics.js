@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Statistic, Table, Typography, DatePicker } from 'antd';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, AreaChart, Area } from 'recharts';
 import { UserAddOutlined, UserOutlined, TeamOutlined } from '@ant-design/icons';
+import api from '../utils/api';
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -18,74 +19,39 @@ const RegistrationAnalytics = ({ dateRange }) => {
     });
 
     useEffect(() => {
-        fetchRegistrationData();
+        if (!dateRange || dateRange.length !== 2) return;
+
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const response = await api.get('/admin/member/signup-count',
+                    {
+                        params: {
+                            startDate: dateRange[0].startOf('day').format('YYYY-MM-DDTHH:mm:ss'),
+                            endDate: dateRange[1].endOf('day').format('YYYY-MM-DDTHH:mm:ss')
+                        }
+                    }
+                );
+
+                const apiData = response.data;
+                const dailyRegistrations = apiData.map(item => ({
+                    date: item.signupDate,
+                    registrations: item.signupCount
+                }));
+
+                setData(prev => ({
+                    ...prev,
+                    dailyRegistrations
+                }));
+            } catch (error) {
+                console.error('회원가입 통계 데이터 불러오기 실패:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
     }, [dateRange]);
-
-    const fetchRegistrationData = async () => {
-        setLoading(true);
-        try {
-            // 실제 API 호출로 대체 예정
-            const mockData = {
-                dailyRegistrations: [
-                    { date: '2024-06-01', registrations: 45, visitors: 1200, conversion: 3.75 },
-                    { date: '2024-06-02', registrations: 52, visitors: 1350, conversion: 3.85 },
-                    { date: '2024-06-03', registrations: 38, visitors: 980, conversion: 3.88 },
-                    { date: '2024-06-04', registrations: 61, visitors: 1520, conversion: 4.01 },
-                    { date: '2024-06-05', registrations: 48, visitors: 1180, conversion: 4.07 },
-                    { date: '2024-06-06', registrations: 55, visitors: 1420, conversion: 3.87 },
-                    { date: '2024-06-07', registrations: 42, visitors: 1100, conversion: 3.82 },
-                    { date: '2024-06-08', registrations: 67, visitors: 1680, conversion: 3.99 },
-                    { date: '2024-06-09', registrations: 58, visitors: 1450, conversion: 4.00 },
-                    { date: '2024-06-10', registrations: 49, visitors: 1250, conversion: 3.92 }
-                ],
-                weeklyRegistrations: [
-                    { week: '2024-W01', registrations: 320, visitors: 8500, conversion: 3.76 },
-                    { week: '2024-W02', registrations: 345, visitors: 9200, conversion: 3.75 },
-                    { week: '2024-W03', registrations: 298, visitors: 7800, conversion: 3.82 },
-                    { week: '2024-W04', registrations: 378, visitors: 10200, conversion: 3.71 },
-                    { week: '2024-W05', registrations: 412, visitors: 11200, conversion: 3.68 },
-                    { week: '2024-W06', registrations: 389, visitors: 10500, conversion: 3.70 },
-                    { week: '2024-W07', registrations: 356, visitors: 9500, conversion: 3.75 },
-                    { week: '2024-W08', registrations: 423, visitors: 11500, conversion: 3.68 },
-                    { week: '2024-W09', registrations: 398, visitors: 10800, conversion: 3.69 },
-                    { week: '2024-W10', registrations: 445, visitors: 12200, conversion: 3.65 }
-                ],
-                monthlyRegistrations: [
-                    { month: '2024-01', registrations: 1250, visitors: 35000, conversion: 3.57 },
-                    { month: '2024-02', registrations: 1380, visitors: 38000, conversion: 3.63 },
-                    { month: '2024-03', registrations: 1520, visitors: 42000, conversion: 3.62 },
-                    { month: '2024-04', registrations: 1680, visitors: 46000, conversion: 3.65 },
-                    { month: '2024-05', registrations: 1820, visitors: 50000, conversion: 3.64 },
-                    { month: '2024-06', registrations: 1950, visitors: 54000, conversion: 3.61 }
-                ],
-                registrationTrends: [
-                    { period: '1월', registrations: 1250, growth: 0 },
-                    { period: '2월', registrations: 1380, growth: 10.4 },
-                    { period: '3월', registrations: 1520, growth: 10.1 },
-                    { period: '4월', registrations: 1680, growth: 10.5 },
-                    { period: '5월', registrations: 1820, growth: 8.3 },
-                    { period: '6월', registrations: 1950, growth: 7.1 }
-                ],
-                registrationBySource: [
-                    { source: '직접 접속', registrations: 850, percentage: 43.6 },
-                    { source: '검색 엔진', registrations: 620, percentage: 31.8 },
-                    { source: '소셜 미디어', registrations: 320, percentage: 16.4 },
-                    { source: '추천 링크', registrations: 160, percentage: 8.2 }
-                ],
-                conversionFunnel: [
-                    { stage: '방문자', count: 54000, conversion: 100 },
-                    { stage: '회원가입 페이지', count: 8100, conversion: 15.0 },
-                    { stage: '회원가입 완료', count: 1950, conversion: 3.6 }
-                ]
-            };
-
-            setData(mockData);
-        } catch (error) {
-            console.error('회원가입 데이터 로딩 실패:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const columns = [
         {
