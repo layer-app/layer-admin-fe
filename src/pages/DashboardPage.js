@@ -88,7 +88,7 @@ const DashboardPage = () => {
                             <Col xs={24} sm={12} lg={6}>
                                 <Card>
                                     <Statistic
-                                        title="총 사용자"
+                                        title="[🚨 미구현] 총 사용자"
                                         value={11234}
                                         prefix={<UserOutlined />}
                                         loading={loading}
@@ -98,7 +98,7 @@ const DashboardPage = () => {
                             <Col xs={24} sm={12} lg={6}>
                                 <Card>
                                     <Statistic
-                                        title="총 회고 수"
+                                        title="[🚨 미구현] 총 회고 수"
                                         value={45678}
                                         prefix={<FileTextOutlined />}
                                         loading={loading}
@@ -108,7 +108,7 @@ const DashboardPage = () => {
                             <Col xs={24} sm={12} lg={6}>
                                 <Card>
                                     <Statistic
-                                        title="활성 스페이스"
+                                        title="[🚨 미구현] 활성 스페이스"
                                         value={892}
                                         prefix={<UserOutlined />}
                                         loading={loading}
@@ -118,7 +118,7 @@ const DashboardPage = () => {
                             <Col xs={24} sm={12} lg={6}>
                                 <Card>
                                     <Statistic
-                                        title="평균 작성 시간"
+                                        title="[🚨 미구현] 평균 작성 시간"
                                         value={15.2}
                                         suffix="분"
                                         loading={loading}

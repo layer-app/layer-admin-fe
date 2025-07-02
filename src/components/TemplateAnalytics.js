@@ -145,7 +145,7 @@ const TemplateAnalytics = ({ dateRange, fullWidth = false }) => {
     const renderOverview = () => (
         <Row gutter={[16, 16]}>
             <Col xs={24} md={12}>
-                <Card title="추천받기 vs 리스트보기 비율" loading={loading}>
+                <Card title="[🚨 미구현] 추천받기 vs 리스트보기 비율" loading={loading}>
                     <ResponsiveContainer width="100%" height={200}>
                         <PieChart>
                             <Pie
@@ -169,7 +169,7 @@ const TemplateAnalytics = ({ dateRange, fullWidth = false }) => {
             </Col>
 
             <Col xs={24} md={12}>
-                <Card title="가장 많이 사용되는 템플릿" loading={loading}>
+                <Card title="[🚨 미구현] 가장 많이 사용되는 템플릿" loading={loading}>
                     <ResponsiveContainer width="100%" height={200}>
                         <BarChart data={data.mostUsedTemplates}>
                             <CartesianGrid strokeDasharray="3 3" />
@@ -198,7 +198,7 @@ const TemplateAnalytics = ({ dateRange, fullWidth = false }) => {
             </Col>
 
             <Col xs={24} lg={12}>
-                <Card title="리스트보기로 선택된 템플릿 TOP 5" loading={loading}>
+                <Card title="[🚨 미구현] 리스트보기로 선택된 템플릿 TOP 5" loading={loading}>
                     <Table
                         columns={columns}
                         dataSource={data.topListTemplates}
@@ -209,7 +209,7 @@ const TemplateAnalytics = ({ dateRange, fullWidth = false }) => {
             </Col>
 
             <Col xs={24}>
-                <Card title="템플릿별 선택 방식 비교" loading={loading}>
+                <Card title="[🚨 미구현] 템플릿별 선택 방식 비교" loading={loading}>
                     <ResponsiveContainer width="100%" height={300}>
                         <BarChart data={data.templateUsageData}>
                             <CartesianGrid strokeDasharray="3 3" />

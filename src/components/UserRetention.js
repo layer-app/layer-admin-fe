@@ -91,7 +91,7 @@ const UserRetention = ({ dateRange, fullWidth = false }) => {
     const renderOverview = () => (
         <Row gutter={[16, 16]}>
             <Col xs={24} md={12}>
-                <Card title="신규 사용자 첫 회고 후 리텐션" loading={loading}>
+                <Card title="[🚨 미구현] 신규 사용자 첫 회고 후 리텐션" loading={loading}>
                     <ResponsiveContainer width="100%" height={200}>
                         <LineChart data={data.firstRetrospectiveRetention}>
                             <CartesianGrid strokeDasharray="3 3" />
@@ -105,7 +105,7 @@ const UserRetention = ({ dateRange, fullWidth = false }) => {
             </Col>
 
             <Col xs={24} md={12}>
-                <Card title="주기적 회고 작성 사용자 분포" loading={loading}>
+                <Card title="[🚨 미구현] 주기적 회고 작성 사용자 분포" loading={loading}>
                     <ResponsiveContainer width="100%" height={200}>
                         <PieChart>
                             <Pie
@@ -133,7 +133,7 @@ const UserRetention = ({ dateRange, fullWidth = false }) => {
     const renderDetailedAnalysis = () => (
         <Row gutter={[16, 16]}>
             <Col xs={24} lg={12}>
-                <Card title="주기별 회고 작성 사용자" loading={loading}>
+                <Card title="[🚨 미구현] 주기별 회고 작성 사용자" loading={loading}>
                     <Table
                         columns={columns}
                         dataSource={data.periodicRetrospectiveUsers}
@@ -144,7 +144,7 @@ const UserRetention = ({ dateRange, fullWidth = false }) => {
             </Col>
 
             <Col xs={24} lg={12}>
-                <Card title="기간별 리텐션 추이" loading={loading}>
+                <Card title="[🚨 미구현] 기간별 리텐션 추이" loading={loading}>
                     <ResponsiveContainer width="100%" height={200}>
                         <BarChart data={data.retentionByPeriod}>
                             <CartesianGrid strokeDasharray="3 3" />
@@ -158,7 +158,7 @@ const UserRetention = ({ dateRange, fullWidth = false }) => {
             </Col>
 
             <Col xs={24}>
-                <Card title="코호트별 리텐션 분석" loading={loading}>
+                <Card title="[🚨 미구현] 코호트별 리텐션 분석" loading={loading}>
                     <ResponsiveContainer width="100%" height={300}>
                         <BarChart data={data.userRetentionData}>
                             <CartesianGrid strokeDasharray="3 3" />
@@ -195,7 +195,7 @@ const UserRetention = ({ dateRange, fullWidth = false }) => {
     }
 
     return (
-        <Card title="리텐션 분석" loading={loading}>
+        <Card title="[🚨 미구현] 리텐션 분석" loading={loading}>
             <ResponsiveContainer width="100%" height={200}>
                 <LineChart data={data.firstRetrospectiveRetention}>
                     <CartesianGrid strokeDasharray="3 3" />

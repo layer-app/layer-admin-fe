@@ -167,7 +167,7 @@ const CompletionRate = ({ dateRange }) => {
 
             <Row gutter={[16, 16]}>
                 <Col xs={24} lg={8}>
-                    <Card title="전체 완료율" loading={loading}>
+                    <Card title="[🚨 미구현] 전체 완료율" loading={loading}>
                         <ResponsiveContainer width="100%" height={300}>
                             <PieChart>
                                 <Pie
@@ -191,7 +191,7 @@ const CompletionRate = ({ dateRange }) => {
                 </Col>
 
                 <Col xs={24} lg={16}>
-                    <Card title="템플릿별 완료율" loading={loading}>
+                    <Card title="[🚨 미구현] 템플릿별 완료율" loading={loading}>
                         <ResponsiveContainer width="100%" height={300}>
                             <BarChart data={data.completionByTemplate}>
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -205,7 +205,7 @@ const CompletionRate = ({ dateRange }) => {
                 </Col>
 
                 <Col xs={24}>
-                    <Card title="완료율 추이" loading={loading}>
+                    <Card title="[🚨 미구현] 완료율 추이" loading={loading}>
                         <ResponsiveContainer width="100%" height={400}>
                             <LineChart data={data.completionTrends}>
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -219,7 +219,7 @@ const CompletionRate = ({ dateRange }) => {
                 </Col>
 
                 <Col xs={24} lg={12}>
-                    <Card title="기간별 완료율" loading={loading}>
+                    <Card title="[🚨 미구현] 기간별 완료율" loading={loading}>
                         <ResponsiveContainer width="100%" height={300}>
                             <BarChart data={data.completionByTimeframe}>
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -233,7 +233,7 @@ const CompletionRate = ({ dateRange }) => {
                 </Col>
 
                 <Col xs={24} lg={12}>
-                    <Card title="사용자 유형별 완료율" loading={loading}>
+                    <Card title="[🚨 미구현] 사용자 유형별 완료율" loading={loading}>
                         <Table
                             columns={userTypeColumns}
                             dataSource={data.userCompletionData}
@@ -244,7 +244,7 @@ const CompletionRate = ({ dateRange }) => {
                 </Col>
 
                 <Col xs={24}>
-                    <Card title="템플릿별 상세 완료율" loading={loading}>
+                    <Card title="[🚨 미구현] 템플릿별 상세 완료율" loading={loading}>
                         <Table
                             columns={columns}
                             dataSource={data.completionByTemplate}
@@ -255,7 +255,7 @@ const CompletionRate = ({ dateRange }) => {
                 </Col>
 
                 <Col xs={24}>
-                    <Card title="기간별 상세 완료율" loading={loading}>
+                    <Card title="[🚨 미구현] 기간별 상세 완료율" loading={loading}>
                         <Table
                             columns={timeframeColumns}
                             dataSource={data.completionByTimeframe}

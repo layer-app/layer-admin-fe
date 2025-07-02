@@ -143,7 +143,7 @@ const RegistrationAnalytics = ({ dateRange }) => {
                 </Col>
 
                 <Col xs={24} lg={12}>
-                    <Card title="월별 회원가입 성장률" loading={loading}>
+                    <Card title="[🚨 미구현] 월별 회원가입 성장률" loading={loading}>
                         <ResponsiveContainer width="100%" height={300}>
                             <BarChart data={data.registrationTrends}>
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -157,7 +157,7 @@ const RegistrationAnalytics = ({ dateRange }) => {
                 </Col>
 
                 <Col xs={24}>
-                    <Card title="회원가입 전환 퍼널" loading={loading}>
+                    <Card title="[🚨 미구현] 회원가입 전환 퍼널" loading={loading}>
                         <ResponsiveContainer width="100%" height={400}>
                             <BarChart data={data.conversionFunnel} layout="horizontal">
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -171,7 +171,7 @@ const RegistrationAnalytics = ({ dateRange }) => {
                 </Col>
 
                 <Col xs={24} lg={12}>
-                    <Card title="유입 경로별 회원가입" loading={loading}>
+                    <Card title="[🚨 미구현] 유입 경로별 회원가입" loading={loading}>
                         <ResponsiveContainer width="100%" height={300}>
                             <BarChart data={data.registrationBySource}>
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -185,7 +185,7 @@ const RegistrationAnalytics = ({ dateRange }) => {
                 </Col>
 
                 <Col xs={24} lg={12}>
-                    <Card title="주별 회원가입 추이" loading={loading}>
+                    <Card title="[🚨 미구현] 주별 회원가입 추이" loading={loading}>
                         <ResponsiveContainer width="100%" height={300}>
                             <LineChart data={data.weeklyRegistrations}>
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -199,7 +199,7 @@ const RegistrationAnalytics = ({ dateRange }) => {
                 </Col>
 
                 <Col xs={24}>
-                    <Card title="일별 상세 회원가입 데이터" loading={loading}>
+                    <Card title="[🚨 미구현] 일별 상세 회원가입 데이터" loading={loading}>
                         <Table
                             columns={columns}
                             dataSource={data.dailyRegistrations}
@@ -210,7 +210,7 @@ const RegistrationAnalytics = ({ dateRange }) => {
                 </Col>
 
                 <Col xs={24} lg={12}>
-                    <Card title="유입 경로별 상세" loading={loading}>
+                    <Card title="[미구현] 유입 경로별 상세" loading={loading}>
                         <Table
                             columns={sourceColumns}
                             dataSource={data.registrationBySource}
@@ -221,7 +221,7 @@ const RegistrationAnalytics = ({ dateRange }) => {
                 </Col>
 
                 <Col xs={24} lg={12}>
-                    <Card title="전환 퍼널 상세" loading={loading}>
+                    <Card title="[🚨 미구현] 전환 퍼널 상세" loading={loading}>
                         <Table
                             columns={funnelColumns}
                             dataSource={data.conversionFunnel}

@@ -114,7 +114,7 @@ const WritingTimeAnalytics = ({ dateRange }) => {
 
             <Row gutter={[16, 16]}>
                 <Col xs={24} lg={12}>
-                    <Card title="템플릿별 평균 작성 시간" loading={loading}>
+                    <Card title="[🚨 미구현] 템플릿별 평균 작성 시간" loading={loading}>
                         <ResponsiveContainer width="100%" height={300}>
                             <BarChart data={data.averageWritingTime}>
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -130,7 +130,7 @@ const WritingTimeAnalytics = ({ dateRange }) => {
                 </Col>
 
                 <Col xs={24} lg={12}>
-                    <Card title="작성 시간 분포" loading={loading}>
+                    <Card title="[🚨 미구현] 작성 시간 분포" loading={loading}>
                         <ResponsiveContainer width="100%" height={300}>
                             <PieChart>
                                 <Pie
@@ -154,7 +154,7 @@ const WritingTimeAnalytics = ({ dateRange }) => {
                 </Col>
 
                 <Col xs={24}>
-                    <Card title="템플릿별 작성 시간 분포" loading={loading}>
+                    <Card title="[🚨 미구현] 템플릿별 작성 시간 분포" loading={loading}>
                         <ResponsiveContainer width="100%" height={400}>
                             <BarChart data={data.timeByTemplate}>
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -172,7 +172,7 @@ const WritingTimeAnalytics = ({ dateRange }) => {
                 </Col>
 
                 <Col xs={24} lg={12}>
-                    <Card title="사용자 유형별 평균 작성 시간" loading={loading}>
+                    <Card title="[🚨 미구현] 사용자 유형별 평균 작성 시간" loading={loading}>
                         <Table
                             columns={userTypeColumns}
                             dataSource={data.timeByUserType}
@@ -183,7 +183,7 @@ const WritingTimeAnalytics = ({ dateRange }) => {
                 </Col>
 
                 <Col xs={24} lg={12}>
-                    <Card title="작성 시간 추이" loading={loading}>
+                    <Card title="[🚨 미구현] 작성 시간 추이" loading={loading}>
                         <ResponsiveContainer width="100%" height={200}>
                             <LineChart data={data.timeTrends}>
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -197,7 +197,7 @@ const WritingTimeAnalytics = ({ dateRange }) => {
                 </Col>
 
                 <Col xs={24}>
-                    <Card title="템플릿별 상세 작성 시간 통계" loading={loading}>
+                    <Card title="[🚨 미구현] 템플릿별 상세 작성 시간 통계" loading={loading}>
                         <Table
                             columns={columns}
                             dataSource={data.averageWritingTime}

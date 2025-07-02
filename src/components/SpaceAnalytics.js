@@ -134,7 +134,7 @@ const SpaceAnalytics = ({ dateRange }) => {
 
             <Row gutter={[16, 16]}>
                 <Col xs={24} lg={12}>
-                    <Card title="팀 vs 개인 스페이스 비율" loading={loading}>
+                    <Card title="[🚨 미구현] 팀 vs 개인 스페이스 비율" loading={loading}>
                         <ResponsiveContainer width="100%" height={300}>
                             <PieChart>
                                 <Pie
@@ -158,7 +158,7 @@ const SpaceAnalytics = ({ dateRange }) => {
                 </Col>
 
                 <Col xs={24} lg={12}>
-                    <Card title="스페이스 활성도 분포" loading={loading}>
+                    <Card title="[🚨 미구현] 스페이스 활성도 분포" loading={loading}>
                         <ResponsiveContainer width="100%" height={300}>
                             <BarChart data={data.spaceActivity}>
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -172,7 +172,7 @@ const SpaceAnalytics = ({ dateRange }) => {
                 </Col>
 
                 <Col xs={24}>
-                    <Card title="스페이스 성장 추이" loading={loading}>
+                    <Card title="[🚨 미구현] 스페이스 성장 추이" loading={loading}>
                         <ResponsiveContainer width="100%" height={400}>
                             <LineChart data={data.spaceGrowth}>
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -189,7 +189,7 @@ const SpaceAnalytics = ({ dateRange }) => {
                 </Col>
 
                 <Col xs={24} lg={12}>
-                    <Card title="스페이스 유형별 분포" loading={loading}>
+                    <Card title="[🚨 미구현] 스페이스 유형별 분포" loading={loading}>
                         <ResponsiveContainer width="100%" height={300}>
                             <BarChart data={data.spaceTypeDistribution}>
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -203,7 +203,7 @@ const SpaceAnalytics = ({ dateRange }) => {
                 </Col>
 
                 <Col xs={24} lg={12}>
-                    <Card title="스페이스 활성도 상세" loading={loading}>
+                    <Card title="[🚨 미구현] 스페이스 활성도 상세" loading={loading}>
                         <Table
                             columns={activityColumns}
                             dataSource={data.spaceActivity}
@@ -214,7 +214,7 @@ const SpaceAnalytics = ({ dateRange }) => {
                 </Col>
 
                 <Col xs={24}>
-                    <Card title="스페이스별 회고 수 (TOP 10)" loading={loading}>
+                    <Card title="[🚨 미구현] 스페이스별 회고 수 (TOP 10)" loading={loading}>
                         <Table
                             columns={columns}
                             dataSource={data.retrospectiveCountBySpace}
