@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Row, Col, Table, Tabs, Typography, message } from 'antd';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import api from '../utils/api';
+import { TemplateChoiceType } from '../constants/templateChoiceType';
+import { getDateParams } from '../utils/dateParams';
 
 const { Title } = Typography;
 const { TabPane } = Tabs;
@@ -21,73 +23,76 @@ const TemplateAnalytics = ({ dateRange, fullWidth = false }) => {
     const fetchTemplateData = useCallback(async () => {
         setLoading(true);
         try {
+            const baseParams = getDateParams(dateRange);
             // 실제 API 호출
-            const [topRecommendedResponse, topListResponse, mostUsedResponse] = await Promise.all([
-                api.get('/admin/template/recommended-count'),
-                api.get('/admin/template/recommended-count', {
+            const [mostUsedResponse, topRecommendedResponse, topListViewResponse] = await Promise.all([
+                api.get('/admin/template/choice-count', {
                     params: {
-                        startDate: dateRange?.[0]?.format('YYYY-MM-DD'),
-                        endDate: dateRange?.[1]?.format('YYYY-MM-DD')
+                        ...baseParams
                     }
                 }),
-                api.get('/admin/template/recommended-count', {
+                api.get('/admin/template/choice-count', {
                     params: {
-                        startDate: dateRange?.[0]?.format('YYYY-MM-DD'),
-                        endDate: dateRange?.[1]?.format('YYYY-MM-DD')
+                        ...baseParams,
+                        choiceType: TemplateChoiceType.RECOMMENDATION
+                    }
+                }),
+                api.get('/admin/template/choice-count', {
+                    params: {
+                        ...baseParams,
+                        choiceType: TemplateChoiceType.LIST_VIEW
                     }
                 })
             ]);
 
             // API 응답 데이터 처리
+            const mostUsedTemplates = mostUsedResponse.data.map(item => ({
+                name: item.formTag,
+                count: item.recommendedCount,
+                percentage: 0
+            }));
+
             const topRecommendedTemplates = topRecommendedResponse.data.map(item => ({
                 name: item.formTag,
                 count: item.recommendedCount,
                 percentage: 0 // 나중에 계산
             }));
-
-            // 전체 추천 수 계산 후 percentage 업데이트
-            const totalRecommended = topRecommendedTemplates.reduce((sum, item) => sum + item.count, 0);
-            console.log(totalRecommended);
+            const totalRecommendedCount = topRecommendedTemplates.reduce((sum, item) => sum + item.count,0);
             topRecommendedTemplates.forEach(item => {
-                item.percentage = totalRecommended > 0 ? Math.round((item.count / totalRecommended) * 100 * 10) / 10 : 0;
+                item.percentage = totalRecommendedCount > 0 ? Math.round((item.count / totalRecommendedCount) * 100 * 10) / 10 : 0;
             });
 
-            const topListTemplates = topListResponse.data.map(item => ({
-                name: item.templateName,
-                count: item.listViewCount,
-                percentage: item.percentage
+            const topListViewTemplates = topListViewResponse.data.map(item => ({
+                name: item.formTag,
+                count: item.recommendedCount,
+                percentage: 0
             }));
-
-            const mostUsedTemplates = mostUsedResponse.data.map(item => ({
-                name: item.templateName,
-                count: item.totalUsage,
-                percentage: item.percentage
-            }));
+            const totalListViewCount = topListViewTemplates.reduce((sum, item) => sum + item.count, 0);
+            topListViewTemplates.forEach(item => {
+                item.percentage = totalListViewCount > 0 ? Math.round((item.count / totalListViewCount) * 100 * 10) / 10 : 0;
+            });
 
             // 추천받기 vs 리스트보기 비율 계산
-            const totalRecommendations = topRecommendedTemplates.reduce((sum, item) => sum + item.count, 0);
-            const totalListView = topListTemplates.reduce((sum, item) => sum + item.count, 0);
-            const total = totalRecommendations + totalListView;
-
+            const total = totalRecommendedCount + totalListViewCount;
             const recommendationVsList = [
                 {
                     name: '추천받기',
-                    value: totalRecommendations,
+                    value: totalRecommendedCount,
                     fill: '#1890ff',
-                    percentage: total > 0 ? Math.round((totalRecommendations / total) * 100) : 0
+                    percentage: total > 0 ? Math.round((totalRecommendedCount / total) * 100) : 0
                 },
                 {
                     name: '리스트 보기',
-                    value: totalListView,
+                    value: totalListViewCount,
                     fill: '#52c41a',
-                    percentage: total > 0 ? Math.round((totalListView / total) * 100) : 0
+                    percentage: total > 0 ? Math.round((totalListViewCount / total) * 100) : 0
                 }
             ];
 
             // 템플릿별 선택 방식 비교 데이터 생성
             const templateUsageData = mostUsedTemplates.map(template => {
                 const recommended = topRecommendedTemplates.find(r => r.name === template.name);
-                const listView = topListTemplates.find(l => l.name === template.name);
+                const listView = topListViewTemplates.find(l => l.name === template.name);
 
                 return {
                     name: template.name,
@@ -100,7 +105,7 @@ const TemplateAnalytics = ({ dateRange, fullWidth = false }) => {
             setData({
                 recommendationVsList,
                 topRecommendedTemplates,
-                topListTemplates,
+                topListViewTemplates,
                 mostUsedTemplates,
                 templateUsageData
             });
@@ -169,7 +174,7 @@ const TemplateAnalytics = ({ dateRange, fullWidth = false }) => {
             </Col>
 
             <Col xs={24} md={12}>
-                <Card title="[🚨 미구현] 가장 많이 사용되는 템플릿" loading={loading}>
+                <Card title="가장 많이 사용되는 템플릿" loading={loading}>
                     <ResponsiveContainer width="100%" height={200}>
                         <BarChart data={data.mostUsedTemplates}>
                             <CartesianGrid strokeDasharray="3 3" />
@@ -198,10 +203,10 @@ const TemplateAnalytics = ({ dateRange, fullWidth = false }) => {
             </Col>
 
             <Col xs={24} lg={12}>
-                <Card title="[🚨 미구현] 리스트보기로 선택된 템플릿 TOP 5" loading={loading}>
+                <Card title="리스트보기로 선택된 템플릿 TOP 5" loading={loading}>
                     <Table
                         columns={columns}
-                        dataSource={data.topListTemplates}
+                        dataSource={data.topListViewTemplates}
                         pagination={false}
                         size="small"
                     />
