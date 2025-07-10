@@ -1,11 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Row, Col, Statistic, Table, Typography, Progress, Tag } from 'antd';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import { TeamOutlined, UserOutlined, FileTextOutlined } from '@ant-design/icons';
+import api from '../utils/api';
+import { getDateParams } from '../utils/dateParams';
+import { SpaceCategoryType } from '../constants/spaceCategoryType';
 
 const { Title, Text } = Typography;
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+
+function parseTeamVsIndividual(raw) {
+    const total = raw.reduce((sum, item) => sum + item.spaceCount, 0);
+    return raw.map(item => ({
+        type: item.category === SpaceCategoryType.TEAM ? '팀 스페이스' : '개인 스페이스',
+        count: item.spaceCount,
+        percentage: total > 0 ? Math.round((item.spaceCount / total) * 1000) / 10 : 0
+    }));
+}
 
 const SpaceAnalytics = ({ dateRange }) => {
     const [loading, setLoading] = useState(false);
@@ -17,59 +29,36 @@ const SpaceAnalytics = ({ dateRange }) => {
         spaceTypeDistribution: []
     });
 
-    useEffect(() => {
-        fetchSpaceData();
-    }, [dateRange]);
-
-    const fetchSpaceData = async () => {
+    const fetchSpaceData = useCallback(async () => {
         setLoading(true);
         try {
-            // 실제 API 호출로 대체 예정
-            const mockData = {
-                teamVsIndividual: [
-                    { type: '팀 스페이스', count: 3200, percentage: 35.8 },
-                    { type: '개인 스페이스', count: 5720, percentage: 64.2 }
-                ],
-                spaceGrowth: [
-                    { month: '2024-01', team: 280, individual: 450, total: 730 },
-                    { month: '2024-02', team: 320, individual: 520, total: 840 },
-                    { month: '2024-03', team: 380, individual: 610, total: 990 },
-                    { month: '2024-04', team: 420, individual: 680, total: 1100 },
-                    { month: '2024-05', team: 480, individual: 750, total: 1230 },
-                    { month: '2024-06', team: 520, individual: 820, total: 1340 }
-                ],
-                spaceActivity: [
-                    { spaceType: '매우 활성', count: 1250, percentage: 14.0 },
-                    { spaceType: '활성', count: 2100, percentage: 23.5 },
-                    { spaceType: '보통', count: 3200, percentage: 35.8 },
-                    { spaceType: '비활성', count: 1800, percentage: 20.1 },
-                    { spaceType: '매우 비활성', count: 580, percentage: 6.5 }
-                ],
-                retrospectiveCountBySpace: [
-                    { spaceName: '개발팀 A', type: '팀', retrospectiveCount: 156, memberCount: 8 },
-                    { spaceName: '마케팅팀 B', type: '팀', retrospectiveCount: 89, memberCount: 5 },
-                    { spaceName: '개인 스페이스 1', type: '개인', retrospectiveCount: 234, memberCount: 1 },
-                    { spaceName: '개인 스페이스 2', type: '개인', retrospectiveCount: 187, memberCount: 1 },
-                    { spaceName: '프로젝트팀 C', type: '팀', retrospectiveCount: 203, memberCount: 12 },
-                    { spaceName: '개인 스페이스 3', type: '개인', retrospectiveCount: 145, memberCount: 1 }
-                ],
-                spaceTypeDistribution: [
-                    { category: '개발팀', count: 1250, percentage: 14.0 },
-                    { category: '마케팅팀', count: 980, percentage: 11.0 },
-                    { category: '디자인팀', count: 720, percentage: 8.1 },
-                    { category: '개인 학습', count: 2100, percentage: 23.5 },
-                    { category: '개인 프로젝트', count: 1800, percentage: 20.1 },
-                    { category: '기타', count: 1080, percentage: 12.1 }
-                ]
-            };
+            const baseParams = getDateParams(dateRange);
 
-            setData(mockData);
+            const [teamVsIndividualRes, spaceGrowthRes, spaceActivityRes, retrospectiveCountRes, spaceTypeDistRes] = await Promise.all([
+                api.get('/admin/space/individual-vs-team', { params: { ...baseParams } }),
+                // api.get('/admin/space/growth', { params: { ...baseParams } }),
+                // api.get('/admin/space/activity', { params: { ...baseParams } }),
+                // api.get('/admin/space/retrospective-count', { params: { ...baseParams } }),
+                // api.get('/admin/space/type-distribution', { params: { ...baseParams } })
+            ]);
+
+            setData({
+                teamVsIndividual: parseTeamVsIndividual(teamVsIndividualRes.data),
+                spaceGrowth: null,
+                spaceActivity: null,
+                retrospectiveCountBySpace: null,
+                spaceTypeDistribution: null
+            });
         } catch (error) {
             console.error('스페이스 데이터 로딩 실패:', error);
         } finally {
             setLoading(false);
         }
-    };
+    }, [dateRange]);
+
+    useEffect(() => {
+        fetchSpaceData();
+    }, [fetchSpaceData]);
 
     const columns = [
         {
@@ -134,7 +123,7 @@ const SpaceAnalytics = ({ dateRange }) => {
 
             <Row gutter={[16, 16]}>
                 <Col xs={24} lg={12}>
-                    <Card title="[🚨 미구현] 팀 vs 개인 스페이스 비율" loading={loading}>
+                    <Card title="팀 vs 개인 스페이스 비율" loading={loading}>
                         <ResponsiveContainer width="100%" height={300}>
                             <PieChart>
                                 <Pie
