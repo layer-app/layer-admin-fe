@@ -145,7 +145,7 @@ const TemplateAnalytics = ({ dateRange, fullWidth = false }) => {
     const renderOverview = () => (
         <Row gutter={[16, 16]}>
             <Col xs={24} md={12}>
-                <Card title="[🚨 미구현] 추천받기 vs 리스트보기 비율" loading={loading}>
+                <Card title="[🚨 미구현, FE 도움 필요] 추천받기 vs 리스트보기 비율" loading={loading}>
                     <ResponsiveContainer width="100%" height={200}>
                         <PieChart>
                             <Pie
