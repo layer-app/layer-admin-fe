@@ -16,7 +16,7 @@ jobs:
     - name: Install dependencies and build
       run: |
         yarn install
-        yarn build
+        CI=false yarn build
 
     - name: Compress build files
       run: tar -czf build.tar.gz build/
