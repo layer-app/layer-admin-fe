@@ -1,0 +1,46 @@
+# .github/workflows/deploy.yml
+name: Deploy React App to EC2
+
+on:
+  push:
+    branches: [ main ]  # main 브랜치 push 시 작동
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Install dependencies and build
+      run: |
+        yarn install
+        yarn build
+
+    - name: Compress build files
+      run: tar -czf build.tar.gz build/
+
+    - name: Copy build to EC2
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_KEY }}
+        source: "build.tar.gz"
+        target: "~/react-app"
+
+    - name: Deploy on EC2
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_KEY }}
+        script: |
+          cd ~/react-app
+          tar -xzf build.tar.gz
+          rm -rf current
+          mv build current
+          # 예: serve 설치 후 실행
+          pkill -f "serve" || true
+          nohup npx serve -s current -l 3000 > serve.log 2>&1 &
