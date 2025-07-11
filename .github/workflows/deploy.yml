@@ -42,5 +42,5 @@ jobs:
           rm -rf current
           mv build current
           # 예: serve 설치 후 실행
-          pkill -f "serve" || true
-          nohup npx serve -s current -l 3000 > serve.log 2>&1 &
+          sudo pkill -f "serve" || true
+          sudo nohup npx serve -s current -l 3000 > serve.log 2>&1 &
