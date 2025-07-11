@@ -46,3 +46,17 @@ jobs:
           # 예: serve 설치 후 실행
           sudo pkill -f "npx serve -s current" || true
           sudo nohup npx serve -s current -l 5173 > serve.log 2>&1 &
+
+          echo "Waiting for server to be healthy..."
+          for i in {1..5}; do
+            sleep 2
+            if curl -sSf http://localhost:5173 > /dev/null; then
+              echo "✅ Health check passed!"
+              exit 0
+            else
+              echo "⏳ Waiting for app... attempt $i"
+            fi
+          done
+
+          echo "❌ Health check failed after 5 attempts"
+          exit 1
