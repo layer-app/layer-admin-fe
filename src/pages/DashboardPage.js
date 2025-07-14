@@ -131,9 +131,6 @@ const DashboardPage = () => {
                             <Col xs={24} lg={12}>
                                 <TemplateAnalytics dateRange={dateRange} />
                             </Col>
-                            <Col xs={24} lg={12}>
-                                <UserRetention dateRange={dateRange} />
-                            </Col>
                         </Row>
                     </div>
                 );

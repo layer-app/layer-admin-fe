@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Statistic, Progress, Table, Tabs, Typography, Tag } from 'antd';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { UserOutlined, ClockCircleOutlined, CalendarOutlined } from '@ant-design/icons';
+import api from '../utils/api';
+import { getDateParams } from '../utils/dateParams';
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -14,8 +15,15 @@ const UserRetention = ({ dateRange, fullWidth = false }) => {
         firstRetrospectiveRetention: [],
         periodicRetrospectiveUsers: [],
         retentionByPeriod: [],
-        userRetentionData: []
+        userRetentionData: [],
+        userActivity: []
     });
+    const [minCount, setMinCount] = useState(1);
+    const [minLength, setMinLength] = useState(1);
+    const [filteredRatio, setFilteredRatio] = useState(null);
+    const [filteredLoading, setFilteredLoading] = useState(false);
+    const [filteredCount, setFilteredCount] = useState(null);
+    const [totalCount, setTotalCount] = useState(null);
 
     useEffect(() => {
         fetchRetentionData();
@@ -56,14 +64,60 @@ const UserRetention = ({ dateRange, fullWidth = false }) => {
                     { cohort: '2024-03', '1주': 88, '2주': 75, '1개월': 61, '2개월': 48, '3개월': 40 },
                     { cohort: '2024-04', '1주': 80, '2주': 65, '1개월': 52, '2개월': 39, '3개월': 32 },
                     { cohort: '2024-05', '1주': 86, '2주': 73, '1개월': 59, '2개월': 46, '3개월': 39 }
-                ]
+                ],
+                userActivity: [
+                    { userId: 1, count: 10, totalLength: 3000 },
+                    { userId: 2, count: 5, totalLength: 1200 },
+                    { userId: 3, count: 2, totalLength: 400 },
+                    { userId: 4, count: 7, totalLength: 2100 },
+                    { userId: 5, count: 1, totalLength: 200 },
+                    { userId: 6, count: 3, totalLength: 800 },
+                    { userId: 7, count: 8, totalLength: 2500 },
+                    { userId: 8, count: 4, totalLength: 1000 },
+                    { userId: 9, count: 6, totalLength: 1800 },
+                    { userId: 10, count: 9, totalLength: 2700 },
+                ],
             };
 
-            setData(mockData);
+            setData(prev => ({ ...mockData, ...prev }));
         } catch (error) {
             console.error('리텐션 데이터 로딩 실패:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleApplyFilter = async () => {
+        if (!dateRange || !dateRange[0] || !dateRange[1]) {
+            setFilteredRatio(null);
+            setFilteredCount(null);
+            setTotalCount(null);
+            return;
+        }
+        setFilteredLoading(true);
+        try {
+            const baseParams = getDateParams(dateRange);
+            const response = await api.get('/admin/retrospect/meaningful', {
+                params: {
+                    ...baseParams,
+                    retrospectLength: minLength,
+                    retrospectCount: minCount,
+                },
+            });
+            const { meaningfulMemberCount, totalMemberCount } = response.data;
+            setFilteredCount(meaningfulMemberCount);
+            setTotalCount(totalMemberCount);
+            if (totalMemberCount === 0) {
+                setFilteredRatio('0.0');
+            } else {
+                setFilteredRatio(((meaningfulMemberCount / totalMemberCount) * 100).toFixed(1));
+            }
+        } catch (e) {
+            setFilteredRatio(null);
+            setFilteredCount(null);
+            setTotalCount(null);
+        } finally {
+            setFilteredLoading(false);
         }
     };
 
@@ -178,33 +232,66 @@ const UserRetention = ({ dateRange, fullWidth = false }) => {
         </Row>
     );
 
-    if (fullWidth) {
-        return (
-            <div>
-                <Title level={3}>리텐션 분석</Title>
-                <Tabs defaultActiveKey="overview">
-                    <TabPane tab="개요" key="overview">
-                        {renderOverview()}
-                    </TabPane>
-                    <TabPane tab="상세 분석" key="detailed">
-                        {renderDetailedAnalysis()}
-                    </TabPane>
-                </Tabs>
-            </div>
-        );
-    }
-
     return (
-        <Card title="[🚨 미구현] 리텐션 분석" loading={loading}>
-            <ResponsiveContainer width="100%" height={200}>
-                <LineChart data={data.firstRetrospectiveRetention}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="period" />
-                    <YAxis />
-                    <Tooltip formatter={(value) => `${value}%`} />
-                    <Line type="monotone" dataKey="retention" stroke="#1890ff" strokeWidth={2} />
-                </LineChart>
-            </ResponsiveContainer>
+        <Card title="유의미한 회고를 주기적으로 작성하는 사용자의 비율" loading={loading}>
+            <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
+                날짜(최상단에 위치), 최소 작성 횟수, 최소 회고 총 글자수를 입력한 뒤 <b>적용</b> 버튼을 누르면 해당 조건을 만족하는 사용자의 비율과 실제 인원수를 확인할 수 있습니다.
+            </Text>
+            <Row gutter={16} align="middle" style={{ marginBottom: 16 }}>
+                <Col>
+                    <Text>최소 작성 횟수:</Text>
+                </Col>
+                <Col>
+                    <input
+                        type="number"
+                        min={1}
+                        value={minCount}
+                        onChange={e => setMinCount(Number(e.target.value))}
+                        style={{ width: 80 }}
+                    />
+                </Col>
+                <Col>
+                    <Text>최소 회고 총 글자수:</Text>
+                </Col>
+                <Col>
+                    <input
+                        type="number"
+                        min={1}
+                        value={minLength}
+                        onChange={e => setMinLength(Number(e.target.value))}
+                        style={{ width: 100 }}
+                    />
+                </Col>
+                <Col>
+                    <button onClick={handleApplyFilter} disabled={filteredLoading}>
+                        {filteredLoading ? '계산중...' : '적용'}
+                    </button>
+                </Col>
+                <Col>
+                    {filteredRatio !== null && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <Statistic
+                                title="조건 만족 사용자 비율"
+                                value={filteredRatio}
+                                suffix="%"
+                                precision={1}
+                            />
+                            {filteredCount !== null && totalCount !== null && (
+                                <Text type="secondary">({filteredCount} / {totalCount}명)</Text>
+                            )}
+                        </div>
+                    )}
+                </Col>
+            </Row>
+            <Tabs defaultActiveKey="overview">
+                <TabPane tab="개요" key="overview">
+                    {renderOverview()}
+                </TabPane>
+                <TabPane tab="상세 분석" key="detailed">
+                    {renderDetailedAnalysis()}
+                </TabPane>
+            </Tabs>
+
         </Card>
     );
 };
