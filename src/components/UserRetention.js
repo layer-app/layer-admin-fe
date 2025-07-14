@@ -3,6 +3,7 @@ import { Card, Row, Col, Statistic, Progress, Table, Tabs, Typography, Tag } fro
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import api from '../utils/api';
 import { getDateParams } from '../utils/dateParams';
+import { UserOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -233,57 +234,90 @@ const UserRetention = ({ dateRange, fullWidth = false }) => {
     );
 
     return (
-        <Card title="유의미한 회고를 주기적으로 작성하는 사용자의 비율" loading={loading}>
-            <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
-                날짜(최상단에 위치), 최소 작성 횟수, 최소 회고 총 글자수를 입력한 뒤 <b>적용</b> 버튼을 누르면 해당 조건을 만족하는 사용자의 비율과 실제 인원수를 확인할 수 있습니다.
-            </Text>
-            <Row gutter={16} align="middle" style={{ marginBottom: 16 }}>
+        <Card
+            style={{ marginBottom: 24 }}
+            bodyStyle={{ padding: 24 }}
+            loading={loading}
+        >
+            <Row align="middle" gutter={24}>
                 <Col>
-                    <Text>최소 작성 횟수:</Text>
+                    <div style={{
+                        background: '#1890ff',
+                        borderRadius: '50%',
+                        width: 56,
+                        height: 56,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
+                        <UserOutlined style={{ color: '#fff', fontSize: 28 }} />
+                    </div>
                 </Col>
-                <Col>
-                    <input
-                        type="number"
-                        min={1}
-                        value={minCount}
-                        onChange={e => setMinCount(Number(e.target.value))}
-                        style={{ width: 80 }}
+                <Col flex="auto">
+                    <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 4 }}>
+                        유의미한 회고를 주기적으로 작성하는 사용자의 비율
+                    </div>
+                    <Statistic
+                        value={filteredRatio}
+                        suffix="%"
+                        precision={1}
+                        valueStyle={{ fontSize: 32, color: '#1890ff', fontWeight: 700 }}
                     />
-                </Col>
-                <Col>
-                    <Text>최소 회고 총 글자수:</Text>
-                </Col>
-                <Col>
-                    <input
-                        type="number"
-                        min={1}
-                        value={minLength}
-                        onChange={e => setMinLength(Number(e.target.value))}
-                        style={{ width: 100 }}
+                    <Progress
+                        percent={Number(filteredRatio) || 0}
+                        showInfo={false}
+                        strokeColor="#1890ff"
+                        style={{ marginTop: 8 }}
                     />
-                </Col>
-                <Col>
-                    <button onClick={handleApplyFilter} disabled={filteredLoading}>
-                        {filteredLoading ? '계산중...' : '적용'}
-                    </button>
-                </Col>
-                <Col>
-                    {filteredRatio !== null && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <Statistic
-                                title="조건 만족 사용자 비율"
-                                value={filteredRatio}
-                                suffix="%"
-                                precision={1}
+                    <div style={{ color: '#888', marginTop: 4 }}>
+                        {filteredCount !== null && totalCount !== null && (
+                            <span>({filteredCount} / {totalCount}명)</span>
+                        )}
+                    </div>
+                    <div style={{
+                        background: '#f0f5ff',
+                        borderRadius: 8,
+                        padding: '8px 12px',
+                        marginTop: 12,
+                        fontSize: 13,
+                        color: '#555'
+                    }}>
+                        날짜, 최소 작성 횟수, 최소 회고 총 글자수를 입력한 뒤 <b>적용</b> 버튼을 누르면 해당 조건을 만족하는 사용자의 비율과 실제 인원수를 확인할 수 있습니다.
+                    </div>
+                    <Row gutter={16} align="middle" style={{ marginTop: 16 }}>
+                        <Col>
+                            <Text>최소 작성 횟수:</Text>
+                        </Col>
+                        <Col>
+                            <input
+                                type="number"
+                                min={1}
+                                value={minCount}
+                                onChange={e => setMinCount(Number(e.target.value))}
+                                style={{ width: 80 }}
                             />
-                            {filteredCount !== null && totalCount !== null && (
-                                <Text type="secondary">({filteredCount} / {totalCount}명)</Text>
-                            )}
-                        </div>
-                    )}
+                        </Col>
+                        <Col>
+                            <Text>최소 회고 총 글자수:</Text>
+                        </Col>
+                        <Col>
+                            <input
+                                type="number"
+                                min={1}
+                                value={minLength}
+                                onChange={e => setMinLength(Number(e.target.value))}
+                                style={{ width: 100 }}
+                            />
+                        </Col>
+                        <Col>
+                            <button onClick={handleApplyFilter} disabled={filteredLoading}>
+                                {filteredLoading ? '계산중...' : '적용'}
+                            </button>
+                        </Col>
+                    </Row>
                 </Col>
             </Row>
-            <Tabs defaultActiveKey="overview">
+            <Tabs defaultActiveKey="overview" style={{ marginTop: 32 }}>
                 <TabPane tab="개요" key="overview">
                     {renderOverview()}
                 </TabPane>
@@ -291,7 +325,6 @@ const UserRetention = ({ dateRange, fullWidth = false }) => {
                     {renderDetailedAnalysis()}
                 </TabPane>
             </Tabs>
-
         </Card>
     );
 };
