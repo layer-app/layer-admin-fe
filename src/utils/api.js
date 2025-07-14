@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // 환경변수에서 API URL 가져오기 (GitHub Actions에서 주입 가능)
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://stgapi.layerapp.io';
 
 // axios 기본 설정
 const api = axios.create({
