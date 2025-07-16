@@ -25,66 +25,25 @@ const UserRetention = ({ dateRange, fullWidth = false }) => {
     const [filteredLoading, setFilteredLoading] = useState(false);
     const [filteredCount, setFilteredCount] = useState(null);
     const [totalCount, setTotalCount] = useState(null);
+    const [retentionPeriodSeconds, setRetentionPeriodSeconds] = useState(null);
+    const [retentionCreateCount, setRetentionCreateCount] = useState(null);
+    const [retentionTotalMemberCount, setRetentionTotalMemberCount] = useState(null);
 
     useEffect(() => {
-        fetchRetentionData();
+        fetchCreateRetention();
     }, [dateRange]);
 
-    const fetchRetentionData = async () => {
-        setLoading(true);
+    const fetchCreateRetention = async () => {
         try {
-            // 실제 API 호출로 대체 예정
-            const mockData = {
-                firstRetrospectiveRetention: [
-                    { period: '1일', retention: 85.2 },
-                    { period: '3일', retention: 72.1 },
-                    { period: '7일', retention: 58.3 },
-                    { period: '14일', retention: 45.7 },
-                    { period: '30일', retention: 32.4 },
-                    { period: '60일', retention: 28.1 },
-                    { period: '90일', retention: 25.3 }
-                ],
-                periodicRetrospectiveUsers: [
-                    { frequency: '매일', users: 1250, percentage: 15.2 },
-                    { frequency: '주 2-3회', users: 2100, percentage: 25.5 },
-                    { frequency: '주 1회', users: 3200, percentage: 38.8 },
-                    { frequency: '월 2-3회', users: 1200, percentage: 14.6 },
-                    { frequency: '월 1회', users: 480, percentage: 5.8 }
-                ],
-                retentionByPeriod: [
-                    { period: '1주', retention: 78.5 },
-                    { period: '2주', retention: 65.2 },
-                    { period: '1개월', retention: 52.1 },
-                    { period: '2개월', retention: 41.3 },
-                    { period: '3개월', retention: 35.7 },
-                    { period: '6개월', retention: 28.9 }
-                ],
-                userRetentionData: [
-                    { cohort: '2024-01', '1주': 85, '2주': 72, '1개월': 58, '2개월': 45, '3개월': 38 },
-                    { cohort: '2024-02', '1주': 82, '2주': 68, '1개월': 55, '2개월': 42, '3개월': 35 },
-                    { cohort: '2024-03', '1주': 88, '2주': 75, '1개월': 61, '2개월': 48, '3개월': 40 },
-                    { cohort: '2024-04', '1주': 80, '2주': 65, '1개월': 52, '2개월': 39, '3개월': 32 },
-                    { cohort: '2024-05', '1주': 86, '2주': 73, '1개월': 59, '2개월': 46, '3개월': 39 }
-                ],
-                userActivity: [
-                    { userId: 1, count: 10, totalLength: 3000 },
-                    { userId: 2, count: 5, totalLength: 1200 },
-                    { userId: 3, count: 2, totalLength: 400 },
-                    { userId: 4, count: 7, totalLength: 2100 },
-                    { userId: 5, count: 1, totalLength: 200 },
-                    { userId: 6, count: 3, totalLength: 800 },
-                    { userId: 7, count: 8, totalLength: 2500 },
-                    { userId: 8, count: 4, totalLength: 1000 },
-                    { userId: 9, count: 6, totalLength: 1800 },
-                    { userId: 10, count: 9, totalLength: 2700 },
-                ],
-            };
-
-            setData(prev => ({ ...mockData, ...prev }));
-        } catch (error) {
-            console.error('리텐션 데이터 로딩 실패:', error);
-        } finally {
-            setLoading(false);
+            const baseParams = getDateParams(dateRange);
+            const res = await api.get('/admin/retrospect/retention', { params: baseParams });
+            setRetentionPeriodSeconds(res.data.retrospectRetentionPeriodSeconds);
+            setRetentionCreateCount(res.data.retrospectCreateCount);
+            setRetentionTotalMemberCount(res.data.totalMemberCount);
+        } catch (e) {
+            setRetentionPeriodSeconds(null);
+            setRetentionCreateCount(null);
+            setRetentionTotalMemberCount(null);
         }
     };
 
@@ -146,40 +105,46 @@ const UserRetention = ({ dateRange, fullWidth = false }) => {
     const renderOverview = () => (
         <Row gutter={[16, 16]}>
             <Col xs={24} md={12}>
-                <Card title="[🚨 미구현] 신규 사용자 첫 회고 후 리텐션" loading={loading}>
-                    <ResponsiveContainer width="100%" height={200}>
-                        <LineChart data={data.firstRetrospectiveRetention}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="period" />
-                            <YAxis />
-                            <Tooltip formatter={(value) => `${value}%`} />
-                            <Line type="monotone" dataKey="retention" stroke="#1890ff" strokeWidth={2} />
-                        </LineChart>
-                    </ResponsiveContainer>
+                <Card title="회고 생성 리텐션 기간" loading={loading}>
+                    <div style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>
+                        {retentionPeriodSeconds !== null ? `${Math.round(retentionPeriodSeconds / 60)}분` : '-'}
+                    </div>
+                    <div style={{ color: '#888', fontSize: 13, marginBottom: 8 }}>
+                        (평균적으로 해당 기간 동안 첫 회고 생성 후 {retentionPeriodSeconds !== null ? `${Math.round(retentionPeriodSeconds / 60)}분` : '-'} 후에 다음 회고가 생성됨)
+                    </div>
+                    <div style={{ color: '#888', fontSize: 13, marginBottom: 8 }}>
+                        (해당 기간동안 만약 특정 유저가 여러 회고를 작성한 경우, 가장 짧은 기간을 선택하여 평균에 합산)
+                    </div>
                 </Card>
             </Col>
-
             <Col xs={24} md={12}>
-                <Card title="[🚨 미구현] 주기적 회고 작성 사용자 분포" loading={loading}>
-                    <ResponsiveContainer width="100%" height={200}>
-                        <PieChart>
-                            <Pie
-                                data={data.periodicRetrospectiveUsers}
-                                cx="50%"
-                                cy="50%"
-                                labelLine={false}
-                                label={({ frequency, percentage }) => `${frequency} ${percentage}%`}
-                                outerRadius={80}
-                                fill="#8884d8"
-                                dataKey="users"
-                            >
-                                {data.periodicRetrospectiveUsers.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                ))}
-                            </Pie>
-                            <Tooltip />
-                        </PieChart>
-                    </ResponsiveContainer>
+                <Card title="회고 생성 리텐션 비율" loading={loading}>
+                    <div style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>
+                        {retentionCreateCount !== null && retentionTotalMemberCount !== null
+                            ? `${retentionCreateCount} / ${retentionTotalMemberCount}명 (${retentionTotalMemberCount > 0 ? ((retentionCreateCount / retentionTotalMemberCount) * 100).toFixed(1) : 0}%)`
+                            : '-'}
+                    </div>
+                    <PieChart width={200} height={200}>
+                        <Pie
+                            data={[
+                                { name: '회고 생성', value: retentionCreateCount || 0 },
+                                { name: '미생성', value: (retentionTotalMemberCount || 0) - (retentionCreateCount || 0) }
+                            ]}
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="value"
+                            label={({ name, value }) => `${name} ${value}`}
+                        >
+                            <Cell key="created" fill="#1890ff" />
+                            <Cell key="not-created" fill="#f0f0f0" />
+                        </Pie>
+                        <Tooltip />
+                    </PieChart>
+                    <div style={{ color: '#888', fontSize: 13, marginBottom: 15 }}>
+                        (기존 유저는 새로운 회고 1개 이상, 해당 기간동안 새로 가입한 유저는 새로운 회고 2개 이상인 비율)
+                    </div>
                 </Card>
             </Col>
         </Row>
