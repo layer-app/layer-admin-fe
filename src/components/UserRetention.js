@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Statistic, Progress, Table, Tabs, Typography, Tag } from 'antd';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { Tooltip, PieChart, Pie, Cell } from 'recharts';
 import api from '../utils/api';
 import { getDateParams } from '../utils/dateParams';
 import { UserOutlined } from '@ant-design/icons';
@@ -41,9 +41,11 @@ const UserRetention = ({ dateRange, fullWidth = false }) => {
     const [retentionPeriodSeconds, setRetentionPeriodSeconds] = useState(null);
     const [retentionCreateCount, setRetentionCreateCount] = useState(null);
     const [retentionTotalMemberCount, setRetentionTotalMemberCount] = useState(null);
+    const [averageCumulativeCount, setAverageCumulativeCount] = useState(null);
 
     useEffect(() => {
         fetchCreateRetention();
+        fetchAverageCumulativeCount();
     }, [dateRange]);
 
     const fetchCreateRetention = async () => {
@@ -57,6 +59,17 @@ const UserRetention = ({ dateRange, fullWidth = false }) => {
             setRetentionPeriodSeconds(null);
             setRetentionCreateCount(null);
             setRetentionTotalMemberCount(null);
+        }
+    };
+
+    // 평균 누적 회고 수 패칭 함수
+    const fetchAverageCumulativeCount = async () => {
+        try {
+            const baseParams = getDateParams(dateRange);
+            const res = await api.get('/admin/retrospect/cumulative-count', { params: baseParams });
+            setAverageCumulativeCount(res.data.averageCumulativeCount);
+        } catch (e) {
+            setAverageCumulativeCount(null);
         }
     };
 
@@ -94,44 +107,34 @@ const UserRetention = ({ dateRange, fullWidth = false }) => {
         }
     };
 
-    const columns = [
-        {
-            title: '주기',
-            dataIndex: 'frequency',
-            key: 'frequency',
-        },
-        {
-            title: '사용자 수',
-            dataIndex: 'users',
-            key: 'users',
-            sorter: (a, b) => a.users - b.users,
-        },
-        {
-            title: '비율',
-            dataIndex: 'percentage',
-            key: 'percentage',
-            render: (percentage) => `${percentage}%`,
-            sorter: (a, b) => a.percentage - b.percentage,
-        }
-    ];
-
     const renderOverview = () => (
         <Row gutter={[16, 16]}>
             <Col xs={24} md={12}>
-                <Card title="회고 생성 리텐션 기간" loading={loading}>
-                    <div style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>
-                        {retentionPeriodSeconds !== null ? getHumanReadableDuration(retentionPeriodSeconds) : '-'}
-                    </div>
-                    <div style={{ color: '#888', fontSize: 13, marginBottom: 8 }}>
-                        (평균적으로 해당 기간 동안 첫 회고 생성 후 {retentionPeriodSeconds !== null ? getHumanReadableDuration(retentionPeriodSeconds) : '-'} 후에 다음 회고가 생성됨)
-                    </div>
-                    <div style={{ color: '#888', fontSize: 13, marginBottom: 8 }}>
-                        (해당 기간동안 만약 특정 유저가 여러 회고를 작성한 경우, 가장 짧은 기간을 선택하여 평균에 합산)
-                    </div>
-                </Card>
+                <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                    <Card title="회고 생성 리텐션 기간" loading={loading} style={{ marginBottom: 16, flex: 1 }}>
+                        <div style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>
+                            {retentionPeriodSeconds !== null ? getHumanReadableDuration(retentionPeriodSeconds) : '-'}
+                        </div>
+                        <div style={{ color: '#888', fontSize: 13, marginBottom: 8 }}>
+                            (평균적으로 해당 기간 동안 첫 회고 생성 후 {retentionPeriodSeconds !== null ? getHumanReadableDuration(retentionPeriodSeconds) : '-'} 후에 다음 회고가 생성됨)
+                        </div>
+                        <div style={{ color: '#888', fontSize: 13, marginBottom: 8 }}>
+                            (해당 기간동안 만약 특정 유저가 여러 회고를 작성한 경우, 가장 짧은 기간을 선택하여 평균에 합산)
+                        </div>
+                    </Card>
+                    <Card title="스페이스당 누적 평균 회고 수" loading={loading} style={{ flex: 1 }}>
+                        <div style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>
+                            {averageCumulativeCount !== null ? averageCumulativeCount : '-'}
+                        </div>
+                        <div style={{ color: '#888', fontSize: 13 }}>
+                            (선택한 기간 내 모든 스페이스의 누적 회고 수의 평균값)
+                        </div>
+                    </Card>
+                </div>
             </Col>
+            {/* 오른쪽: 기존 카드 */}
             <Col xs={24} md={12}>
-                <Card title="회고 생성 리텐션 비율" loading={loading}>
+                <Card title="회고 생성 리텐션 비율" loading={loading} style={{ height: '100%' }}>
                     <div style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>
                         {retentionCreateCount !== null && retentionTotalMemberCount !== null
                             ? `${retentionCreateCount} / ${retentionTotalMemberCount}명 (${retentionTotalMemberCount > 0 ? ((retentionCreateCount / retentionTotalMemberCount) * 100).toFixed(1) : 0}%)`
@@ -158,54 +161,6 @@ const UserRetention = ({ dateRange, fullWidth = false }) => {
                     <div style={{ color: '#888', fontSize: 13, marginBottom: 15 }}>
                         (기존 유저는 새로운 회고 1개 이상, 해당 기간동안 새로 가입한 유저는 새로운 회고 2개 이상인 비율)
                     </div>
-                </Card>
-            </Col>
-        </Row>
-    );
-
-    const renderDetailedAnalysis = () => (
-        <Row gutter={[16, 16]}>
-            <Col xs={24} lg={12}>
-                <Card title="[🚨 미구현] 주기별 회고 작성 사용자" loading={loading}>
-                    <Table
-                        columns={columns}
-                        dataSource={data.periodicRetrospectiveUsers}
-                        pagination={false}
-                        size="small"
-                    />
-                </Card>
-            </Col>
-
-            <Col xs={24} lg={12}>
-                <Card title="[🚨 미구현] 기간별 리텐션 추이" loading={loading}>
-                    <ResponsiveContainer width="100%" height={200}>
-                        <BarChart data={data.retentionByPeriod}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="period" />
-                            <YAxis />
-                            <Tooltip formatter={(value) => `${value}%`} />
-                            <Bar dataKey="retention" fill="#52c41a" />
-                        </BarChart>
-                    </ResponsiveContainer>
-                </Card>
-            </Col>
-
-            <Col xs={24}>
-                <Card title="[🚨 미구현] 코호트별 리텐션 분석" loading={loading}>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={data.userRetentionData}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="cohort" />
-                            <YAxis />
-                            <Tooltip formatter={(value) => `${value}%`} />
-                            <Legend />
-                            <Bar dataKey="1주" fill="#1890ff" />
-                            <Bar dataKey="2주" fill="#52c41a" />
-                            <Bar dataKey="1개월" fill="#faad14" />
-                            <Bar dataKey="2개월" fill="#f5222d" />
-                            <Bar dataKey="3개월" fill="#722ed1" />
-                        </BarChart>
-                    </ResponsiveContainer>
                 </Card>
             </Col>
         </Row>
@@ -298,9 +253,6 @@ const UserRetention = ({ dateRange, fullWidth = false }) => {
             <Tabs defaultActiveKey="overview" style={{ marginTop: 32 }}>
                 <TabPane tab="개요" key="overview">
                     {renderOverview()}
-                </TabPane>
-                <TabPane tab="상세 분석" key="detailed">
-                    {renderDetailedAnalysis()}
                 </TabPane>
             </Tabs>
         </Card>

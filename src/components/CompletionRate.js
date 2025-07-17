@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Statistic, Table, Typography, Progress, Tag } from 'antd';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
-import { CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { Card, Row, Col, Table, Typography, Progress } from 'antd';
+import { XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 
 const { Title, Text } = Typography;
-
-const COLORS = ['#52c41a', '#faad14', '#f5222d'];
 
 const CompletionRate = ({ dateRange }) => {
     const [loading, setLoading] = useState(false);
@@ -75,38 +72,6 @@ const CompletionRate = ({ dateRange }) => {
         }
     };
 
-    const columns = [
-        {
-            title: '템플릿',
-            dataIndex: 'template',
-            key: 'template',
-        },
-        {
-            title: '완료 수',
-            dataIndex: 'completed',
-            key: 'completed',
-            sorter: (a, b) => a.completed - b.completed,
-        },
-        {
-            title: '총 생성 수',
-            dataIndex: 'total',
-            key: 'total',
-            sorter: (a, b) => a.total - b.total,
-        },
-        {
-            title: '완료율',
-            dataIndex: 'rate',
-            key: 'rate',
-            render: (rate) => (
-                <div>
-                    <Progress percent={rate} size="small" />
-                    <Text>{rate}%</Text>
-                </div>
-            ),
-            sorter: (a, b) => a.rate - b.rate,
-        }
-    ];
-
     const timeframeColumns = [
         {
             title: '기간',
@@ -139,71 +104,11 @@ const CompletionRate = ({ dateRange }) => {
         }
     ];
 
-    const userTypeColumns = [
-        {
-            title: '사용자 유형',
-            dataIndex: 'userType',
-            key: 'userType',
-        },
-        {
-            title: '완료율',
-            dataIndex: 'completionRate',
-            key: 'completionRate',
-            render: (rate) => `${rate}%`,
-            sorter: (a, b) => a.completionRate - b.completionRate,
-        },
-        {
-            title: '평균 완료 시간',
-            dataIndex: 'avgCompletionTime',
-            key: 'avgCompletionTime',
-            render: (time) => `${time}일`,
-            sorter: (a, b) => a.avgCompletionTime - b.avgCompletionTime,
-        }
-    ];
-
     return (
         <div>
             <Title level={3}>완료율 분석</Title>
 
             <Row gutter={[16, 16]}>
-                <Col xs={24} lg={8}>
-                    <Card title="[🚨 미구현] 전체 완료율" loading={loading}>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <PieChart>
-                                <Pie
-                                    data={data.completionStatus}
-                                    cx="50%"
-                                    cy="50%"
-                                    labelLine={false}
-                                    label={({ status, percentage }) => `${status} ${percentage}%`}
-                                    outerRadius={100}
-                                    fill="#8884d8"
-                                    dataKey="count"
-                                >
-                                    {data.completionStatus.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.color} />
-                                    ))}
-                                </Pie>
-                                <Tooltip />
-                            </PieChart>
-                        </ResponsiveContainer>
-                    </Card>
-                </Col>
-
-                <Col xs={24} lg={16}>
-                    <Card title="[🚨 미구현] 템플릿별 완료율" loading={loading}>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={data.completionByTemplate}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="template" />
-                                <YAxis />
-                                <Tooltip formatter={(value) => `${value}%`} />
-                                <Bar dataKey="rate" fill="#1890ff" />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </Card>
-                </Col>
-
                 <Col xs={24}>
                     <Card title="[🚨 미구현] 완료율 추이" loading={loading}>
                         <ResponsiveContainer width="100%" height={400}>
@@ -217,43 +122,6 @@ const CompletionRate = ({ dateRange }) => {
                         </ResponsiveContainer>
                     </Card>
                 </Col>
-
-                <Col xs={24} lg={12}>
-                    <Card title="[🚨 미구현] 기간별 완료율" loading={loading}>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={data.completionByTimeframe}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="timeframe" />
-                                <YAxis />
-                                <Tooltip formatter={(value) => `${value}%`} />
-                                <Bar dataKey="rate" fill="#faad14" />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </Card>
-                </Col>
-
-                <Col xs={24} lg={12}>
-                    <Card title="[🚨 미구현] 사용자 유형별 완료율" loading={loading}>
-                        <Table
-                            columns={userTypeColumns}
-                            dataSource={data.userCompletionData}
-                            pagination={false}
-                            size="small"
-                        />
-                    </Card>
-                </Col>
-
-                <Col xs={24}>
-                    <Card title="[🚨 미구현] 템플릿별 상세 완료율" loading={loading}>
-                        <Table
-                            columns={columns}
-                            dataSource={data.completionByTemplate}
-                            pagination={false}
-                            size="small"
-                        />
-                    </Card>
-                </Col>
-
                 <Col xs={24}>
                     <Card title="[🚨 미구현] 기간별 상세 완료율" loading={loading}>
                         <Table
