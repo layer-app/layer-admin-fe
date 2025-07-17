@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card, Row, Col, Statistic, Table, Typography, Progress, Tag } from 'antd';
+import { Card, Row, Col, Statistic, Table, Typography, Progress, Tag, Pagination } from 'antd';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import { TeamOutlined, UserOutlined, FileTextOutlined } from '@ant-design/icons';
 import api from '../utils/api';
@@ -29,6 +29,12 @@ const SpaceAnalytics = ({ dateRange }) => {
         spaceTypeDistribution: []
     });
 
+    const [teamSpaceRatioData, setTeamSpaceRatioData] = useState([]);
+    const [teamSpaceRatioAvg, setTeamSpaceRatioAvg] = useState(null);
+    const [teamSpaceRatioPage, setTeamSpaceRatioPage] = useState(1);
+    const [teamSpaceRatioTotalPages, setTeamSpaceRatioTotalPages] = useState(1);
+    const [teamSpaceRatioLoading, setTeamSpaceRatioLoading] = useState(false);
+
     const fetchSpaceData = useCallback(async () => {
         setLoading(true);
         try {
@@ -56,65 +62,45 @@ const SpaceAnalytics = ({ dateRange }) => {
         }
     }, [dateRange]);
 
+    const fetchTeamSpaceRatio = useCallback(async (page = 1) => {
+        setTeamSpaceRatioLoading(true);
+        try {
+            const baseParams = getDateParams(dateRange);
+            const res = await api.get('/admin/space/average-team-space-ratio-per-member', {
+                params: {
+                    ...baseParams,
+                    page,
+                    size: 20,
+                },
+            });
+            setTeamSpaceRatioData(res.data.averageTeamSpaceRatios || []);
+            setTeamSpaceRatioAvg(res.data.averageTeamSpaceRatioPerMember);
+            setTeamSpaceRatioTotalPages(res.data.totalPages || 1);
+        } catch (e) {
+            setTeamSpaceRatioData([]);
+            setTeamSpaceRatioAvg(null);
+            setTeamSpaceRatioTotalPages(1);
+        } finally {
+            setTeamSpaceRatioLoading(false);
+        }
+    }, [dateRange]);
+
     useEffect(() => {
         fetchSpaceData();
-    }, [fetchSpaceData]);
+        fetchTeamSpaceRatio(1);
+        setTeamSpaceRatioPage(1);
+    }, [dateRange, fetchSpaceData, fetchTeamSpaceRatio]);
 
-    const columns = [
-        {
-            title: '스페이스명',
-            dataIndex: 'spaceName',
-            key: 'spaceName',
-        },
-        {
-            title: '유형',
-            dataIndex: 'type',
-            key: 'type',
-            render: (type) => (
-                <Tag color={type === '팀' ? 'blue' : 'green'}>
-                    {type}
-                </Tag>
-            ),
-        },
-        {
-            title: '회고 수',
-            dataIndex: 'retrospectiveCount',
-            key: 'retrospectiveCount',
-            sorter: (a, b) => a.retrospectiveCount - b.retrospectiveCount,
-        },
-        {
-            title: '멤버 수',
-            dataIndex: 'memberCount',
-            key: 'memberCount',
-            sorter: (a, b) => a.memberCount - b.memberCount,
-        },
-        {
-            title: '인당 회고 수',
-            key: 'perMember',
-            render: (_, record) => Math.round(record.retrospectiveCount / record.memberCount),
-            sorter: (a, b) => (a.retrospectiveCount / a.memberCount) - (b.retrospectiveCount / b.memberCount),
-        }
-    ];
+    const handleTeamSpaceRatioPageChange = (page) => {
+        setTeamSpaceRatioPage(page);
+        fetchTeamSpaceRatio(page);
+    };
 
-    const activityColumns = [
-        {
-            title: '활성도',
-            dataIndex: 'spaceType',
-            key: 'spaceType',
-        },
-        {
-            title: '스페이스 수',
-            dataIndex: 'count',
-            key: 'count',
-            sorter: (a, b) => a.count - b.count,
-        },
-        {
-            title: '비율',
-            dataIndex: 'percentage',
-            key: 'percentage',
-            render: (percentage) => `${percentage}%`,
-            sorter: (a, b) => a.percentage - b.percentage,
-        }
+    const teamSpaceRatioColumns = [
+        { title: '멤버 ID', dataIndex: 'memberId', key: 'memberId' },
+        { title: '전체 스페이스 수', dataIndex: 'totalCount', key: 'totalCount' },
+        { title: '팀 스페이스 수', dataIndex: 'teamCount', key: 'teamCount' },
+        { title: '팀 스페이스 비율', key: 'ratio', render: (_, r) => r.totalCount > 0 ? `${((r.teamCount / r.totalCount) * 100).toFixed(1)}%` : '-' },
     ];
 
     return (
@@ -145,70 +131,35 @@ const SpaceAnalytics = ({ dateRange }) => {
                         </ResponsiveContainer>
                     </Card>
                 </Col>
-
                 <Col xs={24} lg={12}>
-                    <Card title="[🚨 미구현] 스페이스 활성도 분포" loading={loading}>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={data.spaceActivity}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="spaceType" />
-                                <YAxis />
-                                <Tooltip />
-                                <Bar dataKey="count" fill="#1890ff" />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </Card>
-                </Col>
-
-                <Col xs={24}>
-                    <Card title="[🚨 미구현] 스페이스 성장 추이" loading={loading}>
-                        <ResponsiveContainer width="100%" height={400}>
-                            <LineChart data={data.spaceGrowth}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="month" />
-                                <YAxis />
-                                <Tooltip />
-                                <Legend />
-                                <Line type="monotone" dataKey="team" stroke="#1890ff" strokeWidth={2} name="팀 스페이스" />
-                                <Line type="monotone" dataKey="individual" stroke="#52c41a" strokeWidth={2} name="개인 스페이스" />
-                                <Line type="monotone" dataKey="total" stroke="#f5222d" strokeWidth={2} name="총 스페이스" />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </Card>
-                </Col>
-
-                <Col xs={24} lg={12}>
-                    <Card title="[🚨 미구현] 스페이스 유형별 분포" loading={loading}>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={data.spaceTypeDistribution}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="category" />
-                                <YAxis />
-                                <Tooltip />
-                                <Bar dataKey="count" fill="#faad14" />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </Card>
-                </Col>
-
-                <Col xs={24} lg={12}>
-                    <Card title="[🚨 미구현] 스페이스 활성도 상세" loading={loading}>
-                        <Table
-                            columns={activityColumns}
-                            dataSource={data.spaceActivity}
-                            pagination={false}
-                            size="small"
+                    <Card title="모든 멤버의 팀스페이스 비율 평균" style={{ marginBottom: 16 }}>
+                        <Statistic
+                            value={teamSpaceRatioAvg !== null ? (teamSpaceRatioAvg * 100).toFixed(1) : '-'}
+                            suffix="%"
+                            precision={1}
+                            loading={teamSpaceRatioLoading}
                         />
                     </Card>
                 </Col>
-
+            </Row>
+            <Row gutter={[16, 16]} style={{ marginTop: 32 }}>
                 <Col xs={24}>
-                    <Card title="[🚨 미구현] 스페이스별 회고 수 (TOP 10)" loading={loading}>
+                    <Card title="각 멤버별 팀스페이스 비율" style={{ marginBottom: 16 }}>
                         <Table
-                            columns={columns}
-                            dataSource={data.retrospectiveCountBySpace}
+                            columns={teamSpaceRatioColumns}
+                            dataSource={teamSpaceRatioData}
+                            rowKey="memberId"
+                            loading={teamSpaceRatioLoading}
                             pagination={false}
                             size="small"
+                        />
+                        <Pagination
+                            current={teamSpaceRatioPage}
+                            total={teamSpaceRatioTotalPages * 20}
+                            pageSize={20}
+                            onChange={handleTeamSpaceRatioPageChange}
+                            style={{ marginTop: 16, textAlign: 'right' }}
+                            showSizeChanger={false}
                         />
                     </Card>
                 </Col>
