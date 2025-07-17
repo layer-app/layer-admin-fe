@@ -10,6 +10,19 @@ const { TabPane } = Tabs;
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
+// 사람이 읽기 쉬운 시간 단위로 변환하는 함수
+function getHumanReadableDuration(seconds) {
+    if (seconds == null) return '-';
+    const minutes = Math.round(seconds / 60);
+    if (minutes < 60) return `${minutes}분`;
+    const hours = Math.round(minutes / 60);
+    if (hours < 24) return `${hours}시간`;
+    const days = Math.round(hours / 24);
+    if (days < 365) return `${days}일`;
+    const years = Math.round(days / 365);
+    return `${years}년`;
+}
+
 const UserRetention = ({ dateRange, fullWidth = false }) => {
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState({
@@ -107,10 +120,10 @@ const UserRetention = ({ dateRange, fullWidth = false }) => {
             <Col xs={24} md={12}>
                 <Card title="회고 생성 리텐션 기간" loading={loading}>
                     <div style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>
-                        {retentionPeriodSeconds !== null ? `${Math.round(retentionPeriodSeconds / 60)}분` : '-'}
+                        {retentionPeriodSeconds !== null ? getHumanReadableDuration(retentionPeriodSeconds) : '-'}
                     </div>
                     <div style={{ color: '#888', fontSize: 13, marginBottom: 8 }}>
-                        (평균적으로 해당 기간 동안 첫 회고 생성 후 {retentionPeriodSeconds !== null ? `${Math.round(retentionPeriodSeconds / 60)}분` : '-'} 후에 다음 회고가 생성됨)
+                        (평균적으로 해당 기간 동안 첫 회고 생성 후 {retentionPeriodSeconds !== null ? getHumanReadableDuration(retentionPeriodSeconds) : '-'} 후에 다음 회고가 생성됨)
                     </div>
                     <div style={{ color: '#888', fontSize: 13, marginBottom: 8 }}>
                         (해당 기간동안 만약 특정 유저가 여러 회고를 작성한 경우, 가장 짧은 기간을 선택하여 평균에 합산)
