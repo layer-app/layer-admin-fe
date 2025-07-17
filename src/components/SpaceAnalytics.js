@@ -1,14 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card, Row, Col, Statistic, Table, Typography, Progress, Tag, Pagination } from 'antd';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
-import { TeamOutlined, UserOutlined, FileTextOutlined } from '@ant-design/icons';
+import { Card, Row, Col, Statistic, Table, Typography, Pagination } from 'antd';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import api from '../utils/api';
 import { getDateParams } from '../utils/dateParams';
 import { SpaceCategoryType } from '../constants/spaceCategoryType';
 
 const { Title, Text } = Typography;
-
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
 function parseTeamVsIndividual(raw) {
     const total = raw.reduce((sum, item) => sum + item.spaceCount, 0);
@@ -23,10 +20,6 @@ const SpaceAnalytics = ({ dateRange }) => {
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState({
         teamVsIndividual: [],
-        spaceGrowth: [],
-        spaceActivity: [],
-        retrospectiveCountBySpace: [],
-        spaceTypeDistribution: []
     });
 
     const [teamSpaceRatioData, setTeamSpaceRatioData] = useState([]);
@@ -40,20 +33,12 @@ const SpaceAnalytics = ({ dateRange }) => {
         try {
             const baseParams = getDateParams(dateRange);
 
-            const [teamVsIndividualRes, spaceGrowthRes, spaceActivityRes, retrospectiveCountRes, spaceTypeDistRes] = await Promise.all([
+            const [teamVsIndividualRes] = await Promise.all([
                 api.get('/admin/space/individual-vs-team', { params: { ...baseParams } }),
-                // api.get('/admin/space/growth', { params: { ...baseParams } }),
-                // api.get('/admin/space/activity', { params: { ...baseParams } }),
-                // api.get('/admin/space/retrospective-count', { params: { ...baseParams } }),
-                // api.get('/admin/space/type-distribution', { params: { ...baseParams } })
             ]);
 
             setData({
                 teamVsIndividual: parseTeamVsIndividual(teamVsIndividualRes.data),
-                spaceGrowth: null,
-                spaceActivity: null,
-                retrospectiveCountBySpace: null,
-                spaceTypeDistribution: null
             });
         } catch (error) {
             console.error('스페이스 데이터 로딩 실패:', error);
@@ -123,7 +108,7 @@ const SpaceAnalytics = ({ dateRange }) => {
                                     dataKey="count"
                                 >
                                     {data.teamVsIndividual.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        <Cell key={`cell-${index}`} fill={['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'][index % 5]} />
                                     ))}
                                 </Pie>
                                 <Tooltip />
