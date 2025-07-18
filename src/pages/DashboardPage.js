@@ -6,7 +6,9 @@ import {
     FileTextOutlined,
     BarChartOutlined,
     LogoutOutlined,
-    ReloadOutlined
+    ReloadOutlined,
+    AppstoreOutlined,
+    EditOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -17,9 +19,10 @@ import WritingTimeAnalytics from '../components/RetrospectWritingAnalytics';
 import SpaceAnalytics from '../components/SpaceAnalytics';
 import RegistrationAnalytics from '../components/RegistrationAnalytics';
 import './DashboardPage.css';
+import api from '../utils/api';
 
 const { Header, Sider, Content } = Layout;
-const { Title } = Typography;
+const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
 
 const DashboardPage = () => {
@@ -28,6 +31,33 @@ const DashboardPage = () => {
     const [selectedMenu, setSelectedMenu] = useState('overview');
     const [dateRange, setDateRange] = useState([dayjs().subtract(30, 'day'), dayjs()]);
     const [loading, setLoading] = useState(false);
+    const [outlineStats, setOutlineStats] = useState({
+        totalMemberCount: null,
+        totalSpaceCount: null,
+        totalRetrospectCount: null,
+        totalRetrospectAnswerCount: null,
+    });
+
+    useEffect(() => {
+        const fetchOutlineStats = async () => {
+            setLoading(true);
+            try {
+                const res = await api.get('/admin/outline');
+                setOutlineStats(res.data);
+            } catch (error) {
+                setOutlineStats({
+                    totalMemberCount: null,
+                    totalSpaceCount: null,
+                    totalRetrospectCount: null,
+                    totalRetrospectAnswerCount: null,
+                });
+                console.error('개요 통계 데이터 로딩 실패:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchOutlineStats();
+    }, []);
 
     const handleLogout = () => {
         logout();
@@ -78,12 +108,15 @@ const DashboardPage = () => {
             case 'overview':
                 return (
                     <div className="overview-content">
+                        <Text type="secondary" style={{ display: 'block', marginBottom: 8 }}>
+                            ※ 아래 4개의 데이터는 날짜와 상관없이 전체 누적 카운트입니다.
+                        </Text>
                         <Row gutter={[16, 16]}>
                             <Col xs={24} sm={12} lg={6}>
                                 <Card>
                                     <Statistic
-                                        title="[🚨 미구현] 총 사용자"
-                                        value={11234}
+                                        title="총 사용자"
+                                        value={outlineStats.totalMemberCount !== null ? outlineStats.totalMemberCount : '-'}
                                         prefix={<UserOutlined />}
                                         loading={loading}
                                     />
@@ -92,8 +125,18 @@ const DashboardPage = () => {
                             <Col xs={24} sm={12} lg={6}>
                                 <Card>
                                     <Statistic
-                                        title="[🚨 미구현] 총 회고 수"
-                                        value={45678}
+                                        title="총 스페이스 수"
+                                        value={outlineStats.totalSpaceCount !== null ? outlineStats.totalSpaceCount : '-'}
+                                        prefix={<AppstoreOutlined />}
+                                        loading={loading}
+                                    />
+                                </Card>
+                            </Col>
+                            <Col xs={24} sm={12} lg={6}>
+                                <Card>
+                                    <Statistic
+                                        title="총 회고 수"
+                                        value={outlineStats.totalRetrospectCount !== null ? outlineStats.totalRetrospectCount : '-'}
                                         prefix={<FileTextOutlined />}
                                         loading={loading}
                                     />
@@ -102,19 +145,9 @@ const DashboardPage = () => {
                             <Col xs={24} sm={12} lg={6}>
                                 <Card>
                                     <Statistic
-                                        title="[🚨 미구현] 활성 스페이스"
-                                        value={892}
-                                        prefix={<UserOutlined />}
-                                        loading={loading}
-                                    />
-                                </Card>
-                            </Col>
-                            <Col xs={24} sm={12} lg={6}>
-                                <Card>
-                                    <Statistic
-                                        title="[🚨 미구현] 평균 작성 시간"
-                                        value={15.2}
-                                        suffix="분"
+                                        title="총 회고 답변 수"
+                                        value={outlineStats.totalRetrospectAnswerCount !== null ? outlineStats.totalRetrospectAnswerCount : '-'}
+                                        prefix={<EditOutlined />}
                                         loading={loading}
                                     />
                                 </Card>

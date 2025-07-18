@@ -248,7 +248,7 @@ const TemplateAnalytics = ({ dateRange, fullWidth = false }) => {
     }
 
     return (
-        <Card title="템플릿 분석" loading={loading}>
+        <Card title="[🚨미구현, FE 도움 필요] 템플릿 분석" loading={loading}>
             <ResponsiveContainer width="100%" height={200}>
                 <PieChart>
                     <Pie
