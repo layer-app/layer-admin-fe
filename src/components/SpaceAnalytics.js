@@ -6,6 +6,14 @@ import { getDateParams } from '../utils/dateParams';
 
 const { Title, Text } = Typography;
 
+// 진행중인 회고 관련 MOCK 데이터
+const mockOngoingStats = {
+    spaceClickRate: 47.2, // %
+    taskEnterRate: 62.5,  // %
+    taskCompleteRate: 38.1, // %
+    abandonedRate: 21.7, // %
+};
+
 const SpaceAnalytics = ({ dateRange }) => {
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState({
@@ -84,6 +92,51 @@ const SpaceAnalytics = ({ dateRange }) => {
     return (
         <div>
             <Title level={3}>스페이스 분석</Title>
+
+            {/* 진행중인 회고 관련 MOCK 지표 카드 */}
+            <Row gutter={[16, 16]} style={{ marginBottom: 32 }}>
+                <Col xs={24} md={8}>
+                    <Card title="[🚨미구현, FE 도움 필요] 진행중인 회고 스페이스 클릭률">
+                        <div style={{ fontSize: 28, fontWeight: 700, color: '#1890ff', marginBottom: 8 }}>
+                            {mockOngoingStats.spaceClickRate}%
+                        </div>
+                        <div style={{ color: '#888' }}>
+                            (진행중인 회고가 있을 때 스페이스 클릭률)
+                        </div>
+                    </Card>
+                </Col>
+                <Col xs={24} md={8}>
+                    <Card title="[🚨미구현, FE 도움 필요] 테스크 진입/완료 비율">
+                        <div style={{ marginBottom: 8 }}>
+                            <span style={{ fontWeight: 500 }}>진입률: </span>
+                            <span style={{ fontWeight: 700, color: '#52c41a' }}>{mockOngoingStats.taskEnterRate}%</span>
+                        </div>
+                        <div style={{ marginBottom: 8 }}>
+                            <span style={{ fontWeight: 500 }}>완료률: </span>
+                            <span style={{ fontWeight: 700, color: '#faad14' }}>{mockOngoingStats.taskCompleteRate}%</span>
+                        </div>
+                        <Statistic
+                            value={mockOngoingStats.taskCompleteRate}
+                            suffix="%"
+                            precision={1}
+                            valueStyle={{ color: '#faad14' }}
+                        />
+                        <div style={{ color: '#888', marginTop: 8 }}>
+                            (진행중인 회고 테스크에 들어간 비율과 완료한 비율)
+                        </div>
+                    </Card>
+                </Col>
+                <Col xs={24} md={8}>
+                    <Card title="[🚨미구현, FE 도움 필요] 방치 비율">
+                        <div style={{ fontSize: 28, fontWeight: 700, color: '#ff4d4f', marginBottom: 8 }}>
+                            {mockOngoingStats.abandonedRate}%
+                        </div>
+                        <div style={{ color: '#888' }}>
+                            (진행중인 회고가 7일 이상 방치된 비율)
+                        </div>
+                    </Card>
+                </Col>
+            </Row>
 
             <Row gutter={[16, 16]}>
                 <Col xs={24} lg={12}>
