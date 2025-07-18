@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card, Row, Col, Typography } from 'antd';
+import { Card, Row, Col, Typography, Statistic } from 'antd';
 import { Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import api from '../utils/api';
 import { getDateParams } from '../utils/dateParams';
@@ -10,12 +10,29 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
 const WritingTimeAnalytics = ({ dateRange }) => {
     const [loading, setLoading] = useState(false);
+    const [completionRateLoading, setCompletionRateLoading] = useState(false);
+    const [completionRate, setCompletionRate] = useState(null);
     const [data, setData] = useState({
         timeDistribution: [],
         timeByTemplate: [],
         timeByUserType: [],
         timeTrends: []
     });
+
+    // 회고 작성 완수율 데이터 패칭
+    const fetchCompletionRate = useCallback(async () => {
+        setCompletionRateLoading(true);
+        try {
+            const baseParams = getDateParams(dateRange);
+            const res = await api.get('/admin/retrospect/completion-rate', { params: { ...baseParams } });
+            setCompletionRate(res.data.completionRate);
+        } catch (error) {
+            setCompletionRate(null);
+            console.error('회고 작성 완수율 데이터 로딩 실패:', error);
+        } finally {
+            setCompletionRateLoading(false);
+        }
+    }, [dateRange]);
 
     const fetchWritingTimeData = useCallback(async () => {
         setLoading(true);
@@ -45,7 +62,8 @@ const WritingTimeAnalytics = ({ dateRange }) => {
 
     useEffect(() => {
         fetchWritingTimeData();
-    }, [fetchWritingTimeData]);
+        fetchCompletionRate();
+    }, [fetchWritingTimeData, fetchCompletionRate]);
 
     return (
         <div>
@@ -73,6 +91,18 @@ const WritingTimeAnalytics = ({ dateRange }) => {
                                 <Tooltip />
                             </PieChart>
                         </ResponsiveContainer>
+                    </Card>
+                </Col>
+                <Col xs={24} lg={12}>
+                    <Card title="회고 작성 완수율" loading={completionRateLoading}>
+                        <Statistic
+                            value={completionRate !== null ? (completionRate * 100).toFixed(1) : '-'}
+                            suffix="%"
+                            precision={1}
+                        />
+                        <div style={{ color: '#888', fontSize: 13, marginTop: 8 }}>
+                            (선택한 기간 내 회고 작성 완수율을 의미합니다)
+                        </div>
                     </Card>
                 </Col>
             </Row>
