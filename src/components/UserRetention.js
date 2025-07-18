@@ -124,7 +124,7 @@ const UserRetention = ({ dateRange, fullWidth = false }) => {
                     </Card>
                     <Card title="스페이스당 누적 평균 회고 수" loading={loading} style={{ flex: 1 }}>
                         <div style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>
-                            {averageCumulativeCount !== null ? averageCumulativeCount : '-'}
+                            {averageCumulativeCount !== null ? Number(averageCumulativeCount).toFixed(1) : '-'}
                         </div>
                         <div style={{ color: '#888', fontSize: 13 }}>
                             (선택한 기간 내 모든 스페이스의 누적 회고 수의 평균값)
