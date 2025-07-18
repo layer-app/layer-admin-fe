@@ -13,9 +13,8 @@ import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import TemplateAnalytics from '../components/TemplateAnalytics';
 import UserRetention from '../components/UserRetention';
-import WritingTimeAnalytics from '../components/WritingTimeAnalytics';
+import WritingTimeAnalytics from '../components/RetrospectWritingAnalytics';
 import SpaceAnalytics from '../components/SpaceAnalytics';
-import CompletionRate from '../components/CompletionRate';
 import RegistrationAnalytics from '../components/RegistrationAnalytics';
 import './DashboardPage.css';
 
@@ -60,17 +59,12 @@ const DashboardPage = () => {
         {
             key: 'writing-time',
             icon: <BarChartOutlined />,
-            label: '작성 시간 분석',
+            label: '회고 작성 분석',
         },
         {
             key: 'spaces',
             icon: <UserOutlined />,
             label: '스페이스 분석',
-        },
-        {
-            key: 'completion',
-            icon: <BarChartOutlined />,
-            label: '완료율 분석',
         },
         {
             key: 'registration',
@@ -142,8 +136,6 @@ const DashboardPage = () => {
                 return <WritingTimeAnalytics dateRange={dateRange} />;
             case 'spaces':
                 return <SpaceAnalytics dateRange={dateRange} />;
-            case 'completion':
-                return <CompletionRate dateRange={dateRange} />;
             case 'registration':
                 return <RegistrationAnalytics dateRange={dateRange} />;
             default:

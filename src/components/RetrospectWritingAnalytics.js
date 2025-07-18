@@ -49,7 +49,7 @@ const WritingTimeAnalytics = ({ dateRange }) => {
 
     return (
         <div>
-            <Title level={3}>작성 시간 분석</Title>
+            <Title level={3}>회고 작성 분석</Title>
 
             <Row gutter={[16, 16]}>
                 <Col xs={24} lg={12}>
