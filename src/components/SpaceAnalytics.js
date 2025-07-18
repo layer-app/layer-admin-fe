@@ -115,12 +115,6 @@ const SpaceAnalytics = ({ dateRange }) => {
                             <span style={{ fontWeight: 500 }}>완료률: </span>
                             <span style={{ fontWeight: 700, color: '#faad14' }}>{mockOngoingStats.taskCompleteRate}%</span>
                         </div>
-                        <Statistic
-                            value={mockOngoingStats.taskCompleteRate}
-                            suffix="%"
-                            precision={1}
-                            valueStyle={{ color: '#faad14' }}
-                        />
                         <div style={{ color: '#888', marginTop: 8 }}>
                             (진행중인 회고 테스크에 들어간 비율과 완료한 비율)
                         </div>
