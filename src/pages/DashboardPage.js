@@ -26,7 +26,7 @@ const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
 
 const DashboardPage = () => {
-    const { user, logout } = useAuth();
+    const { logout } = useAuth();
     const navigate = useNavigate();
     const [selectedMenu, setSelectedMenu] = useState('overview');
     const [dateRange, setDateRange] = useState([dayjs().subtract(30, 'day'), dayjs()]);

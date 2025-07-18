@@ -3,18 +3,8 @@ import { Card, Row, Col, Statistic, Table, Typography, Pagination } from 'antd';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import api from '../utils/api';
 import { getDateParams } from '../utils/dateParams';
-import { SpaceCategoryType } from '../constants/spaceCategoryType';
 
 const { Title, Text } = Typography;
-
-function parseTeamVsIndividual(raw) {
-    const total = raw.reduce((sum, item) => sum + item.spaceCount, 0);
-    return raw.map(item => ({
-        type: item.category === SpaceCategoryType.TEAM ? '팀 스페이스' : '개인 스페이스',
-        count: item.spaceCount,
-        percentage: total > 0 ? Math.round((item.spaceCount / total) * 1000) / 10 : 0
-    }));
-}
 
 const SpaceAnalytics = ({ dateRange }) => {
     const [loading, setLoading] = useState(false);
@@ -33,12 +23,15 @@ const SpaceAnalytics = ({ dateRange }) => {
         try {
             const baseParams = getDateParams(dateRange);
 
-            const [teamVsIndividualRes] = await Promise.all([
-                api.get('/admin/space/individual-vs-team', { params: { ...baseParams } }),
-            ]);
-
+            const teamVsIndividualRes = await api.get('/admin/space/individual-vs-team', { params: { ...baseParams } });
+            const raw = teamVsIndividualRes.data;
+            const total = raw.reduce((sum, item) => sum + item.spaceCount, 0);
             setData({
-                teamVsIndividual: parseTeamVsIndividual(teamVsIndividualRes.data),
+                teamVsIndividual: raw.map(item => ({
+                    type: item.category === 'TEAM' ? '팀 스페이스' : '개인 스페이스',
+                    count: item.spaceCount,
+                    percentage: total > 0 ? Math.round((item.spaceCount / total) * 1000) / 10 : 0
+                })),
             });
         } catch (error) {
             console.error('스페이스 데이터 로딩 실패:', error);
@@ -130,6 +123,9 @@ const SpaceAnalytics = ({ dateRange }) => {
             <Row gutter={[16, 16]} style={{ marginTop: 32 }}>
                 <Col xs={24}>
                     <Card title="각 멤버별 팀스페이스 비율" style={{ marginBottom: 16 }}>
+                        <Text type="secondary" style={{ display: 'block', marginBottom: 8 }}>
+                            ※ 설정한 기간 동안 스페이스를 만들었거나, 스페이스에 합류한 멤버만 리스트에 표시됩니다.
+                        </Text>
                         <Table
                             columns={teamSpaceRatioColumns}
                             dataSource={teamSpaceRatioData}

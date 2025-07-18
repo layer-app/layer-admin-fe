@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Statistic, Table, Typography, DatePicker } from 'antd';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, AreaChart, Area } from 'recharts';
-import { UserAddOutlined, UserOutlined, TeamOutlined } from '@ant-design/icons';
 import api from '../utils/api';
 
 const { Title, Text } = Typography;
