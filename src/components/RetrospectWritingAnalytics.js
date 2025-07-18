@@ -96,7 +96,7 @@ const WritingTimeAnalytics = ({ dateRange }) => {
                 <Col xs={24} lg={12}>
                     <Card title="회고 작성 완수율" loading={completionRateLoading}>
                         <Statistic
-                            value={completionRate !== null ? (completionRate * 100).toFixed(1) : '-'}
+                            value={completionRate !== null ? completionRate.toFixed(1) : '-'}
                             suffix="%"
                             precision={1}
                         />
