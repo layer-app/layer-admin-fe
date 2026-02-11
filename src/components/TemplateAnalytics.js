@@ -5,7 +5,7 @@ import api from '../utils/api';
 import { TemplateChoiceType } from '../constants/templateChoiceType';
 import { getDateParams } from '../utils/dateParams';
 
-const { Title } = Typography;
+const { Title, Paragraph } = Typography;
 const { TabPane } = Tabs;
 
 const TemplateAnalytics = ({ dateRange, fullWidth = false }) => {
@@ -142,6 +142,13 @@ const TemplateAnalytics = ({ dateRange, fullWidth = false }) => {
         <Row gutter={[16, 16]}>
             <Col xs={24} md={12}>
                 <Card title="[🚨미구현, FE 도움 필요] 추천받기 vs 리스트보기 비율" loading={loading}>
+                    <Paragraph type="secondary" style={{ marginBottom: 16 }}>
+                        추천받기 비율 = (기간 내 추천받기로 선택된 템플릿 수 합계 ÷ (추천받기로 선택된 템플릿 수 합계 + 리스트 보기로 선택된 템플릿 수 합계)) × 100
+                        <br />
+                        리스트 보기 비율 = (기간 내 리스트 보기로 선택된 템플릿 수 합계 ÷ (추천받기로 선택된 템플릿 수 합계 + 리스트 보기로 선택된 템플릿 수 합계)) × 100
+                        <br />
+                        실제 표시는 소수점 이하를 반올림한 정수(%)입니다.
+                    </Paragraph>
                     <ResponsiveContainer width="100%" height={200}>
                         <PieChart>
                             <Pie
@@ -158,7 +165,12 @@ const TemplateAnalytics = ({ dateRange, fullWidth = false }) => {
                                     <Cell key={`cell-${index}`} fill={entry.fill} />
                                 ))}
                             </Pie>
-                            <Tooltip />
+                            <Tooltip
+                                formatter={(value, _name, { payload }) => [
+                                    `${value}회 (${payload.percentage}%)`,
+                                    '선택 수',
+                                ]}
+                            />
                         </PieChart>
                     </ResponsiveContainer>
                 </Card>
@@ -166,12 +178,17 @@ const TemplateAnalytics = ({ dateRange, fullWidth = false }) => {
 
             <Col xs={24} md={12}>
                 <Card title="가장 많이 사용되는 템플릿" loading={loading}>
+                    <Paragraph type="secondary" style={{ marginBottom: 16 }}>
+                        사용 횟수 = 선택 방식(추천받기, 리스트 보기)을 모두 합산한, 기간 내 해당 템플릿이 선택된 총 횟수입니다.
+                    </Paragraph>
                     <ResponsiveContainer width="100%" height={200}>
                         <BarChart data={data.mostUsedTemplates}>
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="name" />
                             <YAxis />
-                            <Tooltip />
+                            <Tooltip
+                                formatter={(value) => [`${value}회`, '선택 수']}
+                            />
                             <Bar dataKey="count" fill="#1890ff" />
                         </BarChart>
                     </ResponsiveContainer>
@@ -184,6 +201,12 @@ const TemplateAnalytics = ({ dateRange, fullWidth = false }) => {
         <Row gutter={[16, 16]}>
             <Col xs={24} lg={12}>
                 <Card title="추천받기로 선택된 템플릿 TOP 5" loading={loading}>
+                    <Paragraph type="secondary" style={{ marginBottom: 16 }}>
+                        사용 횟수 = 기간 내 해당 템플릿이 추천받기로 선택된 횟수입니다.
+                        <br />
+                        비율(%) = (해당 템플릿의 사용 횟수 ÷ TOP 5 템플릿들의 사용 횟수 합계) × 100,
+                        소수점 첫째 자리에서 반올림하여 표시합니다.
+                    </Paragraph>
                     <Table
                         columns={columns}
                         dataSource={data.topRecommendedTemplates}
@@ -195,6 +218,12 @@ const TemplateAnalytics = ({ dateRange, fullWidth = false }) => {
 
             <Col xs={24} lg={12}>
                 <Card title="[🚨미구현, FE 도움 필요] 리스트보기로 선택된 템플릿 TOP 5" loading={loading}>
+                    <Paragraph type="secondary" style={{ marginBottom: 16 }}>
+                        사용 횟수 = 기간 내 해당 템플릿이 리스트 보기에서 선택된 횟수입니다.
+                        <br />
+                        비율(%) = (해당 템플릿의 사용 횟수 ÷ TOP 5 템플릿들의 사용 횟수 합계) × 100,
+                        소수점 첫째 자리에서 반올림하여 표시합니다.
+                    </Paragraph>
                     <Table
                         columns={columns}
                         dataSource={data.topListViewTemplates}
@@ -206,12 +235,21 @@ const TemplateAnalytics = ({ dateRange, fullWidth = false }) => {
 
             <Col xs={24}>
                 <Card title="[🚨미구현, FE 도움 필요] 템플릿별 선택 방식 비교" loading={loading}>
+                    <Paragraph type="secondary" style={{ marginBottom: 16 }}>
+                        추천받기 = 기간 내 해당 템플릿이 추천받기로 선택된 횟수입니다.
+                        <br />
+                        리스트보기 = 기간 내 해당 템플릿이 리스트 보기에서 선택된 횟수입니다.
+                        <br />
+                        총사용 = 추천받기 횟수 + 리스트보기 횟수로 계산된, 템플릿의 전체 사용 횟수입니다.
+                    </Paragraph>
                     <ResponsiveContainer width="100%" height={300}>
                         <BarChart data={data.templateUsageData}>
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="name" />
                             <YAxis />
-                            <Tooltip />
+                            <Tooltip
+                                formatter={(value, name) => [`${value}회`, name]}
+                            />
                             <Legend />
                             <Bar dataKey="추천받기" fill="#1890ff" />
                             <Bar dataKey="리스트보기" fill="#52c41a" />
@@ -240,6 +278,13 @@ const TemplateAnalytics = ({ dateRange, fullWidth = false }) => {
 
     return (
         <Card title="[🚨미구현, FE 도움 필요] 템플릿 분석" loading={loading}>
+            <Paragraph type="secondary" style={{ marginBottom: 16 }}>
+                추천받기 비율 = (기간 내 추천받기로 선택된 템플릿 수 합계 ÷ (추천받기로 선택된 템플릿 수 합계 + 리스트 보기로 선택된 템플릿 수 합계)) × 100
+                <br />
+                리스트 보기 비율 = (기간 내 리스트 보기로 선택된 템플릿 수 합계 ÷ (추천받기로 선택된 템플릿 수 합계 + 리스트 보기로 선택된 템플릿 수 합계)) × 100
+                <br />
+                실제 표시는 소수점 이하를 반올림한 정수(%)입니다.
+            </Paragraph>
             <ResponsiveContainer width="100%" height={200}>
                 <PieChart>
                     <Pie
@@ -256,7 +301,12 @@ const TemplateAnalytics = ({ dateRange, fullWidth = false }) => {
                             <Cell key={`cell-${index}`} fill={entry.fill} />
                         ))}
                     </Pie>
-                    <Tooltip />
+                    <Tooltip
+                        formatter={(value, _name, { payload }) => [
+                            `${value}회 (${payload.percentage}%)`,
+                            '선택 수',
+                        ]}
+                    />
                 </PieChart>
             </ResponsiveContainer>
         </Card>

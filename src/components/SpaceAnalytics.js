@@ -151,7 +151,12 @@ const SpaceAnalytics = ({ dateRange }) => {
                                         <Cell key={`cell-${index}`} fill={['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'][index % 5]} />
                                     ))}
                                 </Pie>
-                                <Tooltip />
+                                <Tooltip
+                                    formatter={(value, _name, { payload }) => [
+                                        `${value}개 스페이스 (${payload.percentage}%)`,
+                                        '스페이스 수',
+                                    ]}
+                                />
                             </PieChart>
                         </ResponsiveContainer>
                     </Card>

@@ -63,7 +63,9 @@ const RegistrationAnalytics = ({ dateRange }) => {
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis dataKey="date" />
                                 <YAxis />
-                                <Tooltip />
+                                <Tooltip
+                                    formatter={(value) => [`${value}명`, '가입자 수']}
+                                />
                                 <Area type="monotone" dataKey="registrations" stroke="#1890ff" fill="#1890ff" fillOpacity={0.3} />
                             </AreaChart>
                         </ResponsiveContainer>
