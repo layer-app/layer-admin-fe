@@ -277,7 +277,7 @@ const TemplateAnalytics = ({ dateRange, fullWidth = false }) => {
     }
 
     return (
-        <Card title="[🚨미구현, FE 도움 필요] 템플릿 분석" loading={loading}>
+        <Card title="[🚨FE 쿼리 param 추가 필요] 템플릿 분석" loading={loading}>
             <Paragraph type="secondary" style={{ marginBottom: 16 }}>
                 추천받기 비율 = (기간 내 추천받기로 선택된 템플릿 수 합계 ÷ (추천받기로 선택된 템플릿 수 합계 + 리스트 보기로 선택된 템플릿 수 합계)) × 100
                 <br />
