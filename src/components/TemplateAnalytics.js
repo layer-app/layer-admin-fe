@@ -141,7 +141,7 @@ const TemplateAnalytics = ({ dateRange, fullWidth = false }) => {
     const renderOverview = () => (
         <Row gutter={[16, 16]}>
             <Col xs={24} md={12}>
-                <Card title="[🚨미구현, FE 도움 필요] 추천받기 vs 리스트보기 비율" loading={loading}>
+                <Card title="[🚨FE 쿼리 param 추가 필요] 추천받기 vs 리스트보기 비율" loading={loading}>
                     <Paragraph type="secondary" style={{ marginBottom: 16 }}>
                         추천받기 비율 = (기간 내 추천받기로 선택된 템플릿 수 합계 ÷ (추천받기로 선택된 템플릿 수 합계 + 리스트 보기로 선택된 템플릿 수 합계)) × 100
                         <br />
