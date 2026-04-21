@@ -17,6 +17,10 @@ const formatMinutes = (value) => {
     if (typeof value !== 'number' || !Number.isFinite(value)) return '-';
     return value === 0 ? '0분' : `${value.toFixed(1)}분`;
 };
+const formatChars = (value) => {
+    if (typeof value !== 'number' || !Number.isFinite(value)) return '-';
+    return `${value.toLocaleString()}자`;
+};
 
 const WritingTimeAnalytics = ({ dateRange }) => {
     const [loading, setLoading] = useState(false);
@@ -116,7 +120,7 @@ const WritingTimeAnalytics = ({ dateRange }) => {
                 </Col>
                 <Col xs={24} sm={12} lg={6} xl={5}>
                     <Card loading={overviewLoading}>
-                        <Statistic title="평균 회고 길이" value={formatNumber(overview.averageRetrospectLength)} />
+                        <Statistic title="평균 회고 길이" value={formatChars(overview.averageRetrospectLength)} />
                     </Card>
                 </Col>
                 <Col xs={24} sm={12} lg={8} xl={6}>
