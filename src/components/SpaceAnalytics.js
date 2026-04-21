@@ -10,7 +10,7 @@ const { Title, Text } = Typography;
 const mockOngoingStats = {
     spaceClickRate: 47.2, // %
     taskEnterRate: 62.5,  // %
-    taskCompleteRate: 38.1, // %
+    taskCompleteRate: -1, // %
     abandonedRate: 21.7, // %
 };
 
