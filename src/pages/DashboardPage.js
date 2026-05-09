@@ -209,6 +209,21 @@ const DashboardPage = () => {
                         </div>
                         <div className="header-right">
                             <Space>
+                                {[30, 60, 90].map((days) => (
+                                    <Button
+                                        key={days}
+                                        size="small"
+                                        type={
+                                            dateRange &&
+                                            Math.round(dateRange[1].diff(dateRange[0], 'day', true)) === days
+                                                ? 'primary'
+                                                : 'default'
+                                        }
+                                        onClick={() => setDateRange([dayjs().subtract(days, 'day'), dayjs()])}
+                                    >
+                                        {days}일
+                                    </Button>
+                                ))}
                                 <RangePicker
                                     value={dateRange}
                                     onChange={setDateRange}
