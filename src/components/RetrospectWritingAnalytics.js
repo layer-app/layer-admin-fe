@@ -145,9 +145,6 @@ const WritingTimeAnalytics = ({ dateRange }) => {
                         </div>
                     </Card>
                 </Col>
-            </Row>
-
-            <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
                 <Col xs={24} lg={12}>
                     <Card title="작성 시간 분포" loading={loading}>
                         <div style={{ color: '#888', fontSize: 13, marginBottom: 12 }}>
