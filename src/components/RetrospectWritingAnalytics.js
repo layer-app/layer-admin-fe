@@ -112,6 +112,23 @@ const WritingTimeAnalytics = ({ dateRange }) => {
 
             <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
                 <Col xs={24} lg={12}>
+                    <Card title="회고 작성 완수율 (평균)" loading={overviewLoading}>
+                        <Statistic value={formatPercent(overview.averageCompletionRate)} />
+                        <div style={{ color: '#888', fontSize: 13, marginTop: 8 }}>
+                            - 회고별 목표 답변 수 = 각 회고에 설정된 목표 답변 수(회고 생성했을 당시의 space 전체 인원 수)입니다.
+                            <br />
+                            - 회고별 실제 답변 수 = 선택한 기간 동안 해당 회고에 기록된 실제 답변 건수 입니다.
+                            <br />
+                            - 각 회고의 완수율(%) = (회고별 실제 답변 수 ÷ 회고별 목표 답변 수) × 100 으로 계산합니다.
+                            <br />
+                            - 화면에 보이는 값은, 위에서 계산된 <b>모든 회고별 완수율(%)의 산술 평균값</b>입니다.
+                        </div>
+                    </Card>
+                </Col>
+            </Row>
+
+            <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+                <Col xs={24} lg={12}>
                     <Card title="작성 시간 분포" loading={loading}>
                         <div style={{ color: '#888', fontSize: 13, marginBottom: 12 }}>
                             - 각 구간의 인원 수 = 선택한 기간 동안, 회고 작성에 걸린 시간이 해당 구간에 속하는 사용자 수입니다.
