@@ -24,6 +24,8 @@ const formatMinutes = (value) => {
 const WritingTimeAnalytics = ({ dateRange }) => {
     const [loading, setLoading] = useState(false);
     const [overviewLoading, setOverviewLoading] = useState(false);
+    const [completionRateLoading, setCompletionRateLoading] = useState(false);
+    const [completionRate, setCompletionRate] = useState(null);
     const [overview, setOverview] = useState({
         createdRetrospectCount: null,
         completedRetrospectCount: null,
@@ -73,10 +75,28 @@ const WritingTimeAnalytics = ({ dateRange }) => {
         }
     }, [dateRange]);
 
+    const fetchCompletionRate = useCallback(async () => {
+        setCompletionRateLoading(true);
+        try {
+            const res = await api.get('/admin/retrospect/completion-rate', { params: getDateParams(dateRange) });
+            const payload = res?.data;
+            const value = typeof payload === 'number'
+                ? payload
+                : (payload?.completionRate ?? payload?.averageCompletionRate ?? payload?.rate ?? null);
+            setCompletionRate(typeof value === 'number' && Number.isFinite(value) ? value : null);
+        } catch (error) {
+            setCompletionRate(null);
+            console.error('회고 작성 완수율 데이터 로딩 실패:', error);
+        } finally {
+            setCompletionRateLoading(false);
+        }
+    }, [dateRange]);
+
     useEffect(() => {
         fetchOverview();
         fetchWritingTimeData();
-    }, [fetchOverview, fetchWritingTimeData]);
+        fetchCompletionRate();
+    }, [fetchOverview, fetchWritingTimeData, fetchCompletionRate]);
 
     return (
         <div>
@@ -112,8 +132,8 @@ const WritingTimeAnalytics = ({ dateRange }) => {
 
             <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
                 <Col xs={24} lg={12}>
-                    <Card title="회고 작성 완수율 (평균)" loading={overviewLoading}>
-                        <Statistic value={formatPercent(overview.averageCompletionRate)} />
+                    <Card title="회고 작성 완수율 (평균)" loading={completionRateLoading}>
+                        <Statistic value={formatPercent(completionRate)} />
                         <div style={{ color: '#888', fontSize: 13, marginTop: 8 }}>
                             - 회고별 목표 답변 수 = 각 회고에 설정된 목표 답변 수(회고 생성했을 당시의 space 전체 인원 수)입니다.
                             <br />
