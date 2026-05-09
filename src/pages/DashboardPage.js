@@ -18,6 +18,7 @@ import UserRetention from '../components/UserRetention';
 import WritingTimeAnalytics from '../components/RetrospectWritingAnalytics';
 import SpaceAnalytics from '../components/SpaceAnalytics';
 import RegistrationAnalytics from '../components/RegistrationAnalytics';
+import RetrospectCycleAnalytics from '../components/RetrospectCycleAnalytics';
 import './DashboardPage.css';
 import api from '../utils/api';
 
@@ -101,6 +102,11 @@ const DashboardPage = () => {
             icon: <UserOutlined />,
             label: '회원가입 분석',
         },
+        {
+            key: 'creation-cycle',
+            icon: <BarChartOutlined />,
+            label: '회고 생성 주기',
+        },
     ];
 
     const renderContent = () => {
@@ -171,6 +177,8 @@ const DashboardPage = () => {
                 return <SpaceAnalytics dateRange={dateRange} />;
             case 'registration':
                 return <RegistrationAnalytics dateRange={dateRange} />;
+            case 'creation-cycle':
+                return <RetrospectCycleAnalytics dateRange={dateRange} />;
             default:
                 return <div>페이지를 선택해주세요.</div>;
         }
