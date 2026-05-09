@@ -17,7 +17,9 @@ const parsePercentValue = (value) => {
 const WritingTimeAnalytics = ({ dateRange }) => {
     const [loading, setLoading] = useState(false);
     const [completionRateLoading, setCompletionRateLoading] = useState(false);
+    const [overviewLoading, setOverviewLoading] = useState(false);
     const [completionRate, setCompletionRate] = useState(null);
+    const [avgCharCount, setAvgCharCount] = useState(null);
     const [data, setData] = useState({
         timeDistribution: [],
         timeByTemplate: [],
@@ -42,6 +44,22 @@ const WritingTimeAnalytics = ({ dateRange }) => {
             console.error('회고 작성 완수율 데이터 로딩 실패:', error);
         } finally {
             setCompletionRateLoading(false);
+        }
+    }, [dateRange]);
+
+    // 평균 글자수 데이터 패칭
+    const fetchOverview = useCallback(async () => {
+        setOverviewLoading(true);
+        try {
+            const baseParams = getDateParams(dateRange);
+            const res = await api.get('/admin/retrospect/overview', { params: { ...baseParams } });
+            const val = res?.data?.averageRetrospectLength;
+            setAvgCharCount(typeof val === 'number' && Number.isFinite(val) ? Math.floor(val) : null);
+        } catch (error) {
+            setAvgCharCount(null);
+            console.error('평균 글자수 데이터 로딩 실패:', error);
+        } finally {
+            setOverviewLoading(false);
         }
     }, [dateRange]);
 
@@ -74,7 +92,8 @@ const WritingTimeAnalytics = ({ dateRange }) => {
     useEffect(() => {
         fetchWritingTimeData();
         fetchCompletionRate();
-    }, [fetchWritingTimeData, fetchCompletionRate]);
+        fetchOverview();
+    }, [fetchWritingTimeData, fetchCompletionRate, fetchOverview]);
 
     return (
         <div>
@@ -117,6 +136,20 @@ const WritingTimeAnalytics = ({ dateRange }) => {
                         </ResponsiveContainer>
                     </Card>
                 </Col>
+                <Col xs={24} lg={12}>
+                    <Card title="평균 회고 글자 수" loading={overviewLoading}>
+                        <Statistic
+                            value={avgCharCount !== null ? avgCharCount.toLocaleString() : '-'}
+                            suffix="자"
+                        />
+                        <div style={{ color: '#888', fontSize: 13, marginTop: 8 }}>
+                            - 선택한 기간 동안 작성된 회고 답변의 평균 글자 수입니다. (소수점 버림)
+                        </div>
+                    </Card>
+                </Col>
+            </Row>
+
+            <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
                 <Col xs={24} lg={12}>
                     <Card title="회고 작성 완수율 (평균)" loading={completionRateLoading}>
                         <Statistic
