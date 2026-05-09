@@ -186,7 +186,7 @@ const DashboardPage = () => {
 
     return (
         <Layout style={{ minHeight: '100vh' }}>
-            <Sider width={250} className="dashboard-sider">
+            <Sider width={220} className="dashboard-sider">
                 <div className="logo">
                     <h2>Layer 어드민</h2>
                 </div>
@@ -203,7 +203,7 @@ const DashboardPage = () => {
                 <Header className="dashboard-header">
                     <div className="header-content">
                         <div className="header-left">
-                            <Title level={4} style={{ margin: 0, color: '#fff' }}>
+                            <Title level={4} style={{ margin: 0 }}>
                                 {menuItems.find(item => item.key === selectedMenu)?.label}
                             </Title>
                         </div>

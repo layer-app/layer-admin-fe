@@ -1,50 +1,86 @@
+/* ── Design Tokens ── */
+:root {
+    --sidebar-bg: #0D1F35;
+    --sidebar-hover: #162D47;
+    --sidebar-active: #1A3A57;
+    --sidebar-text: #8BA4BC;
+    --sidebar-width: 220px;
+    --accent: #1677FF;
+    --page-bg: #F4F6F9;
+    --card-bg: #FFFFFF;
+    --card-border: #E8ECF0;
+    --text-primary: #111827;
+    --text-secondary: #5A6B7C;
+    --text-muted: #8A98A6;
+    --border: #E2E8EF;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --radius-md: 10px;
+    --radius-lg: 14px;
+}
+
+/* ── Sidebar ── */
 .dashboard-sider {
-    background: #001529;
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+    background: var(--sidebar-bg) !important;
+    width: var(--sidebar-width) !important;
+    min-width: var(--sidebar-width) !important;
+    max-width: var(--sidebar-width) !important;
 }
 
 .logo {
-    height: 64px;
+    height: 56px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    background: #002140;
-    border-bottom: 1px solid #001529;
+    padding: 0 20px;
+    background: var(--sidebar-bg);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 }
 
 .logo h2 {
     color: #fff;
     margin: 0;
-    font-size: 18px;
-    font-weight: 600;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
 }
 
 .dashboard-menu {
-    border-right: none;
-    background: #001529;
+    border-right: none !important;
+    background: var(--sidebar-bg) !important;
 }
 
 .dashboard-menu .ant-menu-item {
-    color: #bfbfbf;
-    border-right: none;
+    color: var(--sidebar-text) !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    border-left: 3px solid transparent;
+    padding-left: 17px !important;
+    font-size: 13px;
 }
 
 .dashboard-menu .ant-menu-item:hover {
-    color: #fff;
-    background: #1890ff;
+    background: var(--sidebar-hover) !important;
+    color: #fff !important;
 }
 
 .dashboard-menu .ant-menu-item-selected {
-    background: #1890ff;
-    color: #fff;
+    background: var(--sidebar-active) !important;
+    color: #fff !important;
+    border-left-color: var(--accent) !important;
+    font-weight: 500;
 }
 
+/* ── Header ── */
 .dashboard-header {
-    background: #fff;
-    padding: 0 24px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    position: relative;
-    z-index: 1;
+    background: #fff !important;
+    padding: 0 28px !important;
+    height: 56px !important;
+    line-height: 56px !important;
+    border-bottom: 1px solid var(--border);
+    box-shadow: none !important;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 .header-content {
@@ -55,7 +91,10 @@
 }
 
 .header-left h4 {
-    color: #1890ff !important;
+    color: var(--text-primary) !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.3px;
 }
 
 .header-right {
@@ -63,52 +102,94 @@
     align-items: center;
 }
 
+/* ── Content ── */
 .dashboard-content {
-    padding: 24px;
-    background: #f0f2f5;
-    min-height: calc(100vh - 64px);
+    padding: 28px;
+    background: var(--page-bg);
+    min-height: calc(100vh - 56px);
 }
 
 .overview-content {
     width: 100%;
 }
 
+/* ── Cards ── */
 .ant-card {
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: var(--radius-md) !important;
+    border: 1px solid var(--card-border) !important;
+    box-shadow: var(--shadow-sm) !important;
 }
 
+.ant-card-head {
+    border-bottom: 1px solid var(--card-border) !important;
+    min-height: 44px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: var(--text-primary) !important;
+}
+
+/* ── Statistics ── */
 .ant-statistic-title {
-    color: #666;
-    font-size: 14px;
+    color: var(--text-muted) !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    margin-bottom: 6px !important;
 }
 
 .ant-statistic-content {
-    color: #1890ff;
-    font-weight: 600;
+    color: var(--text-primary) !important;
+    font-weight: 700 !important;
+    font-size: 24px !important;
+    letter-spacing: -0.5px !important;
 }
 
-@media (max-width: 768px) {
+.ant-statistic-content-suffix {
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: var(--text-secondary) !important;
+}
+
+/* ── Buttons (30/60/90일) ── */
+.ant-btn-default {
+    border-color: var(--border) !important;
+    color: var(--text-secondary) !important;
+    font-size: 12px !important;
+}
+
+.ant-btn-default:hover {
+    background: var(--page-bg) !important;
+    border-color: var(--border) !important;
+    color: var(--text-primary) !important;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
     .dashboard-sider {
-        position: fixed;
-        height: 100vh;
-        z-index: 999;
-        transform: translateX(-100%);
-        transition: transform 0.3s;
+        display: none;
     }
 
-    .dashboard-sider.ant-layout-sider-collapsed {
-        transform: translateX(0);
+    .dashboard-header {
+        padding: 0 16px !important;
+    }
+
+    .dashboard-content {
+        padding: 16px;
     }
 
     .header-content {
-        flex-direction: column;
-        gap: 16px;
-        padding: 16px 0;
+        flex-wrap: wrap;
+        gap: 8px;
+        height: auto;
+        padding: 10px 0;
     }
 
     .header-right {
-        width: 100%;
-        justify-content: center;
+        flex-wrap: wrap;
+        gap: 4px;
     }
 }
