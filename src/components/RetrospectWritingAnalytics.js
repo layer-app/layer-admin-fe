@@ -4,60 +4,49 @@ import { Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import api from '../utils/api';
 import { getDateParams } from '../utils/dateParams';
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
-const parsePercentValue = (value) => {
-    if (value === null || value === undefined) return null;
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : null;
+const formatNumber = (value) =>
+    typeof value === 'number' && Number.isFinite(value) ? Math.floor(value).toLocaleString() : '-';
+
+const formatPercent = (value) => {
+    if (typeof value !== 'number' || !Number.isFinite(value)) return '-';
+    return value === 0 ? '0%' : `${value.toFixed(1)}%`;
+};
+
+const formatMinutes = (value) => {
+    if (typeof value !== 'number' || !Number.isFinite(value)) return '-';
+    return value === 0 ? '0분' : `${value.toFixed(1)}분`;
 };
 
 const WritingTimeAnalytics = ({ dateRange }) => {
     const [loading, setLoading] = useState(false);
-    const [completionRateLoading, setCompletionRateLoading] = useState(false);
     const [overviewLoading, setOverviewLoading] = useState(false);
-    const [completionRate, setCompletionRate] = useState(null);
-    const [avgCharCount, setAvgCharCount] = useState(null);
-    const [data, setData] = useState({
-        timeDistribution: [],
-        timeByTemplate: [],
-        timeByUserType: [],
-        timeTrends: []
+    const [overview, setOverview] = useState({
+        createdRetrospectCount: null,
+        completedRetrospectCount: null,
+        averageCompletionRate: null,
+        averageRetrospectLength: null,
+        averageWritingTimeMinutes: null,
     });
+    const [data, setData] = useState({ timeDistribution: [] });
 
-    // 회고 작성 완수율 데이터 패칭
-    const fetchCompletionRate = useCallback(async () => {
-        setCompletionRateLoading(true);
-        try {
-            const baseParams = getDateParams(dateRange);
-            const res = await api.get('/admin/retrospect/completion-rate', { params: { ...baseParams } });
-            const payload = res?.data;
-            const candidate = typeof payload === 'number'
-                ? payload
-                : (payload?.completionRate ?? payload?.averageCompletionRate ?? payload?.rate ?? null);
-
-            setCompletionRate(parsePercentValue(candidate));
-        } catch (error) {
-            setCompletionRate(null);
-            console.error('회고 작성 완수율 데이터 로딩 실패:', error);
-        } finally {
-            setCompletionRateLoading(false);
-        }
-    }, [dateRange]);
-
-    // 평균 글자수 데이터 패칭
     const fetchOverview = useCallback(async () => {
         setOverviewLoading(true);
         try {
-            const baseParams = getDateParams(dateRange);
-            const res = await api.get('/admin/retrospect/overview', { params: { ...baseParams } });
-            const val = res?.data?.averageRetrospectLength;
-            setAvgCharCount(typeof val === 'number' && Number.isFinite(val) ? Math.floor(val) : null);
+            const res = await api.get('/admin/retrospect/overview', { params: getDateParams(dateRange) });
+            const payload = res?.data || {};
+            setOverview({
+                createdRetrospectCount: payload.createdRetrospectCount ?? null,
+                completedRetrospectCount: payload.completedRetrospectCount ?? null,
+                averageCompletionRate: payload.averageCompletionRate ?? null,
+                averageRetrospectLength: payload.averageRetrospectLength ?? null,
+                averageWritingTimeMinutes: payload.averageWritingTimeMinutes ?? null,
+            });
         } catch (error) {
-            setAvgCharCount(null);
-            console.error('평균 글자수 데이터 로딩 실패:', error);
+            console.error('회고 작성 개요 데이터 로딩 실패:', error);
         } finally {
             setOverviewLoading(false);
         }
@@ -66,22 +55,17 @@ const WritingTimeAnalytics = ({ dateRange }) => {
     const fetchWritingTimeData = useCallback(async () => {
         setLoading(true);
         try {
-            const baseParams = getDateParams(dateRange);
-            const timeDistRes = await api.get('/admin/retrospect/stay-time', { params: { ...baseParams } });
-            const raw = timeDistRes.data;
+            const res = await api.get('/admin/retrospect/stay-time', { params: getDateParams(dateRange) });
+            const raw = res.data;
             const total = raw.reduce((sum, item) => sum + item.count, 0);
             const timeDistribution = raw
                 .filter(item => item.count > 0)
                 .map(item => ({
                     range: item.answerTimeRangeLabel,
                     users: item.count,
-                    percentage: total > 0 ? Math.round((item.count / total) * 1000) / 10 : 0
+                    percentage: total > 0 ? Math.round((item.count / total) * 1000) / 10 : 0,
                 }));
-
-            setData(prev => ({
-                ...prev,
-                timeDistribution
-            }));
+            setData({ timeDistribution });
         } catch (error) {
             console.error('작성 시간 데이터 로딩 실패:', error);
         } finally {
@@ -90,16 +74,43 @@ const WritingTimeAnalytics = ({ dateRange }) => {
     }, [dateRange]);
 
     useEffect(() => {
-        fetchWritingTimeData();
-        fetchCompletionRate();
         fetchOverview();
-    }, [fetchWritingTimeData, fetchCompletionRate, fetchOverview]);
+        fetchWritingTimeData();
+    }, [fetchOverview, fetchWritingTimeData]);
 
     return (
         <div>
             <Title level={3}>회고 작성 분석</Title>
 
             <Row gutter={[16, 16]}>
+                <Col xs={24} sm={12} lg={6} xl={4}>
+                    <Card loading={overviewLoading}>
+                        <Statistic title="생성된 회고 수" value={formatNumber(overview.createdRetrospectCount)} />
+                    </Card>
+                </Col>
+                <Col xs={24} sm={12} lg={6} xl={4}>
+                    <Card loading={overviewLoading}>
+                        <Statistic title="완료된 회고 수" value={formatNumber(overview.completedRetrospectCount)} />
+                    </Card>
+                </Col>
+                <Col xs={24} sm={12} lg={6} xl={5}>
+                    <Card loading={overviewLoading}>
+                        <Statistic title="평균 완수율" value={formatPercent(overview.averageCompletionRate)} />
+                    </Card>
+                </Col>
+                <Col xs={24} sm={12} lg={6} xl={5}>
+                    <Card loading={overviewLoading}>
+                        <Statistic title="평균 회고 길이" value={formatNumber(overview.averageRetrospectLength)} suffix="자" />
+                    </Card>
+                </Col>
+                <Col xs={24} sm={12} lg={8} xl={6}>
+                    <Card loading={overviewLoading}>
+                        <Statistic title="평균 작성 시간" value={formatMinutes(overview.averageWritingTimeMinutes)} />
+                    </Card>
+                </Col>
+            </Row>
+
+            <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
                 <Col xs={24} lg={12}>
                     <Card title="작성 시간 분포" loading={loading}>
                         <div style={{ color: '#888', fontSize: 13, marginBottom: 12 }}>
@@ -134,38 +145,6 @@ const WritingTimeAnalytics = ({ dateRange }) => {
                                 />
                             </PieChart>
                         </ResponsiveContainer>
-                    </Card>
-                </Col>
-                <Col xs={24} lg={12}>
-                    <Card title="평균 회고 글자 수" loading={overviewLoading}>
-                        <Statistic
-                            value={avgCharCount !== null ? avgCharCount.toLocaleString() : '-'}
-                            suffix="자"
-                        />
-                        <div style={{ color: '#888', fontSize: 13, marginTop: 8 }}>
-                            - 선택한 기간 동안 작성된 회고 답변의 평균 글자 수입니다. (소수점 버림)
-                        </div>
-                    </Card>
-                </Col>
-            </Row>
-
-            <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-                <Col xs={24} lg={12}>
-                    <Card title="회고 작성 완수율 (평균)" loading={completionRateLoading}>
-                        <Statistic
-                            value={completionRate !== null ? completionRate.toFixed(1) : '-'}
-                            suffix="%"
-                            precision={1}
-                        />
-                        <div style={{ color: '#888', fontSize: 13, marginTop: 8 }}>
-                            - 회고별 목표 답변 수 = 각 회고에 설정된 목표 답변 수(회고 생성했을 당시의 space 전체 인원 수)입니다.
-                            <br />
-                            - 회고별 실제 답변 수 = 선택한 기간 동안 해당 회고에 기록된 실제 답변 건수 입니다.
-                            <br />
-                            - 각 회고의 완수율(%) = (회고별 실제 답변 수 ÷ 회고별 목표 답변 수) × 100 으로 계산합니다.
-                            <br />
-                            - 화면에 보이는 값은, 위에서 계산된 <b>모든 회고별 완수율(%)의 산술 평균값</b>입니다.
-                        </div>
                     </Card>
                 </Col>
             </Row>
