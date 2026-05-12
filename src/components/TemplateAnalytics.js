@@ -141,7 +141,7 @@ const TemplateAnalytics = ({ dateRange, fullWidth = false }) => {
     const renderOverview = () => (
         <Row gutter={[16, 16]}>
             <Col xs={24} md={12}>
-                <Card title="[🚨FE 쿼리 param 추가 필요] 추천받기 vs 리스트보기 비율" loading={loading}>
+                <Card title="추천받기 vs 리스트보기 비율" loading={loading}>
                     <Paragraph type="secondary" style={{ marginBottom: 16 }}>
                         추천받기 비율 = (기간 내 추천받기로 선택된 템플릿 수 합계 ÷ (추천받기로 선택된 템플릿 수 합계 + 리스트 보기로 선택된 템플릿 수 합계)) × 100
                         <br />
@@ -217,7 +217,7 @@ const TemplateAnalytics = ({ dateRange, fullWidth = false }) => {
             </Col>
 
             <Col xs={24} lg={12}>
-                <Card title="[🚨FE 쿼리 param 추가 필요] 리스트보기로 선택된 템플릿 TOP 5" loading={loading}>
+                <Card title="리스트보기로 선택된 템플릿 TOP 5" loading={loading}>
                     <Paragraph type="secondary" style={{ marginBottom: 16 }}>
                         사용 횟수 = 기간 내 해당 템플릿이 리스트 보기에서 선택된 횟수입니다.
                         <br />
@@ -234,7 +234,7 @@ const TemplateAnalytics = ({ dateRange, fullWidth = false }) => {
             </Col>
 
             <Col xs={24}>
-                <Card title="[🚨FE 쿼리 param 추가 필요] 템플릿별 선택 방식 비교" loading={loading}>
+                <Card title="템플릿별 선택 방식 비교" loading={loading}>
                     <Paragraph type="secondary" style={{ marginBottom: 16 }}>
                         추천받기 = 기간 내 해당 템플릿이 추천받기로 선택된 횟수입니다.
                         <br />
@@ -277,7 +277,7 @@ const TemplateAnalytics = ({ dateRange, fullWidth = false }) => {
     }
 
     return (
-        <Card title="[🚨FE 쿼리 param 추가 필요] 템플릿 분석" loading={loading}>
+        <Card title="템플릿 분석" loading={loading}>
             <Paragraph type="secondary" style={{ marginBottom: 16 }}>
                 추천받기 비율 = (기간 내 추천받기로 선택된 템플릿 수 합계 ÷ (추천받기로 선택된 템플릿 수 합계 + 리스트 보기로 선택된 템플릿 수 합계)) × 100
                 <br />
