@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card, Row, Col, Typography, Statistic } from 'antd';
+import { Card, Row, Col, Typography, Statistic, Tooltip as AntTooltip } from 'antd';
+import { QuestionCircleOutlined } from '@ant-design/icons';
 import {
     ResponsiveContainer,
     BarChart,
@@ -52,7 +53,10 @@ const RetrospectCycleAnalytics = ({ dateRange }) => {
 
             <Row gutter={[16, 16]}>
                 <Col xs={24} sm={8}>
-                    <Card title="전체 평균" loading={loading}>
+                    <Card
+                        title={<span>전체 평균 <AntTooltip title="선택 기간 동안 회고를 1회 이상 생성한 전체 활성 유저의 회고 간격 평균이에요. 팀·개인 회고 유형을 모두 포함하여 산출해요."><QuestionCircleOutlined style={{ color: '#8A98A6', fontSize: 12 }} /></AntTooltip></span>}
+                        loading={loading}
+                    >
                         <Statistic
                             value={data ? fmt(data.overallAverageDays) : '-'}
                             valueStyle={{ fontSize: 28 }}
@@ -63,7 +67,10 @@ const RetrospectCycleAnalytics = ({ dateRange }) => {
                     </Card>
                 </Col>
                 <Col xs={24} sm={8}>
-                    <Card title="팀 회고 평균" loading={loading}>
+                    <Card
+                        title={<span>팀 회고 평균 <AntTooltip title="스페이스 리더가 팀 단위로 생성하는 팀 회고만을 대상으로 계산한 평균 간격이에요. 팀 리텐션 흐름을 파악하는 데 활용해요."><QuestionCircleOutlined style={{ color: '#8A98A6', fontSize: 12 }} /></AntTooltip></span>}
+                        loading={loading}
+                    >
                         <Statistic
                             value={data ? fmt(data.teamAverageDays) : '-'}
                             valueStyle={{ fontSize: 28 }}
@@ -74,7 +81,10 @@ const RetrospectCycleAnalytics = ({ dateRange }) => {
                     </Card>
                 </Col>
                 <Col xs={24} sm={8}>
-                    <Card title="개인 회고 평균" loading={loading}>
+                    <Card
+                        title={<span>개인 회고 평균 <AntTooltip title="개인 회고만을 대상으로 계산한 평균 간격이에요. 팀 회고 주기보다 짧을수록 개인 회고 습관이 잘 형성되고 있다는 신호예요."><QuestionCircleOutlined style={{ color: '#8A98A6', fontSize: 12 }} /></AntTooltip></span>}
+                        loading={loading}
+                    >
                         <Statistic
                             value={data ? fmt(data.individualAverageDays) : '-'}
                             valueStyle={{ fontSize: 28 }}
@@ -88,7 +98,10 @@ const RetrospectCycleAnalytics = ({ dateRange }) => {
 
             <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
                 <Col xs={24}>
-                    <Card title="생성 주기별 유저 분포" loading={loading}>
+                    <Card
+                        title={<span>생성 주기별 유저 분포 <AntTooltip title="2회 이상 회고를 생성한 유저를 대상으로, 유저별 평균 생성 간격(일)을 기준으로 5개 구간에 분류해요. 주기적(7일↓) 비율이 높을수록 습관 형성이 잘 되고 있다는 신호예요."><QuestionCircleOutlined style={{ color: '#8A98A6', fontSize: 12 }} /></AntTooltip></span>}
+                        loading={loading}
+                    >
                         <div style={{ color: '#888', fontSize: 13, marginBottom: 12 }}>
                             - 2회 이상 회고를 생성한 유저를 대상으로, 유저별 평균 생성 간격(일)을 기준으로 분포를 나타냅니다.
                             <br />

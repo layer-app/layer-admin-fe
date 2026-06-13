@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card, Row, Col, Typography, Statistic } from 'antd';
+import { Card, Row, Col, Typography, Statistic, Tooltip as AntTooltip } from 'antd';
+import { QuestionCircleOutlined } from '@ant-design/icons';
 import {
     Tooltip,
     ResponsiveContainer,
@@ -208,27 +209,27 @@ const WritingTimeAnalytics = ({ dateRange }) => {
             <Row gutter={[16, 16]}>
                 <Col xs={24} sm={12} lg={6} xl={4}>
                     <Card loading={overviewLoading}>
-                        <Statistic title="생성된 회고 수" value={formatNumber(overview.createdRetrospectCount)} />
+                        <Statistic title={<span>생성된 회고 수 <AntTooltip title="선택한 기간 동안 새로 생성된 회고의 수예요. created_at 기준으로 집계해요."><QuestionCircleOutlined style={{ color: '#8A98A6', fontSize: 12 }} /></AntTooltip></span>} value={formatNumber(overview.createdRetrospectCount)} />
                     </Card>
                 </Col>
                 <Col xs={24} sm={12} lg={6} xl={4}>
                     <Card loading={overviewLoading}>
-                        <Statistic title="완료된 회고 수" value={formatNumber(overview.completedRetrospectCount)} />
+                        <Statistic title={<span>완료된 회고 수 <AntTooltip title="선택한 기간 동안 제출이 완료된 회고의 수예요. submitted_at 값이 존재하는 회고를 완료로 간주해요."><QuestionCircleOutlined style={{ color: '#8A98A6', fontSize: 12 }} /></AntTooltip></span>} value={formatNumber(overview.completedRetrospectCount)} />
                     </Card>
                 </Col>
                 <Col xs={24} sm={12} lg={6} xl={5}>
                     <Card loading={overviewLoading}>
-                        <Statistic title="평균 완수율" value={formatPercent(overview.averageCompletionRate)} />
+                        <Statistic title={<span>평균 완수율 <AntTooltip title="각 회고의 완수율(%) = (실제 답변 수 ÷ 목표 답변 수) × 100. 화면에 보이는 값은 선택 기간 내 모든 회고별 완수율의 산술 평균이에요."><QuestionCircleOutlined style={{ color: '#8A98A6', fontSize: 12 }} /></AntTooltip></span>} value={formatPercent(overview.averageCompletionRate)} />
                     </Card>
                 </Col>
                 <Col xs={24} sm={12} lg={6} xl={5}>
                     <Card loading={overviewLoading}>
-                        <Statistic title="평균 회고 길이" value={formatNumber(overview.averageRetrospectLength)} suffix="자" />
+                        <Statistic title={<span>평균 회고 길이 <AntTooltip title="완료된 회고의 전체 항목 입력 글자 수 합산 평균이에요. 공백 포함 기준으로 계산해요."><QuestionCircleOutlined style={{ color: '#8A98A6', fontSize: 12 }} /></AntTooltip></span>} value={formatNumber(overview.averageRetrospectLength)} suffix="자" />
                     </Card>
                 </Col>
                 <Col xs={24} sm={12} lg={8} xl={6}>
                     <Card loading={overviewLoading}>
-                        <Statistic title="평균 작성 시간" value={formatMinutes(overview.averageWritingTimeMinutes)} />
+                        <Statistic title={<span>평균 작성 시간 <AntTooltip title="회고 질문 화면 진입 후 제출까지의 소요 시간 평균이에요. 완료된 회고만 대상으로 계산해요."><QuestionCircleOutlined style={{ color: '#8A98A6', fontSize: 12 }} /></AntTooltip></span>} value={formatMinutes(overview.averageWritingTimeMinutes)} />
                     </Card>
                 </Col>
             </Row>
@@ -236,7 +237,7 @@ const WritingTimeAnalytics = ({ dateRange }) => {
             {/* Completion rate + Time distribution */}
             <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
                 <Col xs={24} lg={12}>
-                    <Card title="회고 작성 완수율 (평균)" loading={completionRateLoading}>
+                    <Card title={<span>회고 작성 완수율 (평균) <AntTooltip title="회고별 완수율(%) = (실제 답변 수 ÷ 목표 답변 수) × 100. 목표 답변 수는 회고 생성 당시 스페이스 전체 인원 수이고, 화면의 값은 선택 기간 내 모든 회고 완수율의 산술 평균이에요."><QuestionCircleOutlined style={{ color: '#8A98A6', fontSize: 12 }} /></AntTooltip></span>} loading={completionRateLoading}>
                         <Statistic value={formatPercent(completionRate)} />
                         <div style={{ color: '#888', fontSize: 13, marginTop: 8 }}>
                             - 회고별 목표 답변 수 = 각 회고에 설정된 목표 답변 수(회고 생성했을 당시의 space 전체 인원 수)입니다.
@@ -250,7 +251,7 @@ const WritingTimeAnalytics = ({ dateRange }) => {
                     </Card>
                 </Col>
                 <Col xs={24} lg={12}>
-                    <Card title="작성 시간 분포" loading={loading}>
+                    <Card title={<span>작성 시간 분포 <AntTooltip title="회고 질문 조회 시점부터 제출까지의 소요 시간을 구간별로 집계해요. 5분 이하 구간이 많으면 충분한 고민 없이 빠르게 완료하는 유저가 많다는 신호예요."><QuestionCircleOutlined style={{ color: '#8A98A6', fontSize: 12 }} /></AntTooltip></span>} loading={loading}>
                         <div style={{ color: '#888', fontSize: 13, marginBottom: 12 }}>
                             - 측정: 회고 질문 조회 시점부터 [제출하기] 버튼 클릭 시점까지
                             <br />
@@ -293,7 +294,7 @@ const WritingTimeAnalytics = ({ dateRange }) => {
                 {/* Writing Cycle Distribution */}
                 <Col xs={24} lg={12}>
                     <Card
-                        title="작성 주기별 유저 분포"
+                        title={<span>작성 주기별 유저 분포 <AntTooltip title="선택 기간 동안 유저의 회고 작성 주기를 5개 구간으로 분류한 차트예요. 주기적(7일↓) 비율이 높을수록 습관 형성이 잘 되고 있는 신호예요."><QuestionCircleOutlined style={{ color: '#8A98A6', fontSize: 12 }} /></AntTooltip></span>}
                         loading={cycleDistLoading}
                         extra={cycleDist ? <span style={{ fontSize: 12, color: '#5A6B7C' }}>평균 작성 주기 <b style={{ color: '#004336' }}>{cycleDist.averageIntervalDays.toFixed(1)}일</b></span> : null}
                     >
@@ -325,7 +326,7 @@ const WritingTimeAnalytics = ({ dateRange }) => {
 
                 {/* Monthly Cycle Trend */}
                 <Col xs={24} lg={12}>
-                    <Card title="작성 주기 분포 월별 추이" loading={cycleTrendLoading}
+                    <Card title={<span>작성 주기 분포 월별 추이 <AntTooltip title="월별로 작성 주기별 유저 비율이 어떻게 변해왔는지 보여줘요. 분기적·비정기 유저의 패턴은 12개월 추이에서 더 명확하게 드러나요."><QuestionCircleOutlined style={{ color: '#8A98A6', fontSize: 12 }} /></AntTooltip></span>} loading={cycleTrendLoading}
                         extra={<span style={{ fontSize: 11, color: '#8A98A6' }}>최근 6개월</span>}
                     >
                         <ResponsiveContainer width="100%" height={260}>
@@ -351,7 +352,7 @@ const WritingTimeAnalytics = ({ dateRange }) => {
             <Row gutter={[16, 16]}>
                 {/* Funnel */}
                 <Col xs={24} lg={12}>
-                    <Card title="회고 완수 퍼널" loading={funnelLoading}
+                    <Card title={<span>회고 완수 퍼널 <AntTooltip title="선택한 기간 내 생성된 회고 건수를 기준으로 각 완수 단계까지 도달한 비율을 보여줘요. 시작 완수율(첫 입력)→형식 완수율(최소 글자·필수 항목)→제출 완수율(최종 제출) 순으로 진행해요."><QuestionCircleOutlined style={{ color: '#8A98A6', fontSize: 12 }} /></AntTooltip></span>} loading={funnelLoading}
                         extra={<span style={{ fontSize: 11, color: '#8A98A6' }}>선택 기간 내 생성된 회고 기준</span>}
                     >
                         {funnelSteps.map((step, i) => (
@@ -393,7 +394,7 @@ const WritingTimeAnalytics = ({ dateRange }) => {
 
                 {/* Monthly Completion Rate Trend */}
                 <Col xs={24} lg={12}>
-                    <Card title="월별 제출 완료율 추이" loading={completionTrendLoading}
+                    <Card title={<span>월별 제출 완료율 추이 <AntTooltip title="팀 회고와 개인 회고의 완료율을 월별로 비교해요. 팀 완료율이 개인보다 꾸준히 높은 경향이 있으며, 완료율 저하 시점을 통해 이탈 패턴을 파악할 수 있어요."><QuestionCircleOutlined style={{ color: '#8A98A6', fontSize: 12 }} /></AntTooltip></span>} loading={completionTrendLoading}
                         extra={<span style={{ fontSize: 11, color: '#8A98A6' }}>최근 12개월</span>}
                     >
                         <div style={{ display: 'flex', gap: 12, marginBottom: 10 }}>

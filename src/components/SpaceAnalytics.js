@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card, Row, Col, Statistic, Table, Typography, Pagination } from 'antd';
+import { Card, Row, Col, Statistic, Table, Typography, Pagination, Tooltip as AntTooltip } from 'antd';
+import { QuestionCircleOutlined } from '@ant-design/icons';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import api from '../utils/api';
 import { getDateParams } from '../utils/dateParams';
@@ -208,7 +209,7 @@ const SpaceAnalytics = ({ dateRange }) => {
             {/* 진행중인 회고 관련 MOCK 지표 카드 */}
             <Row gutter={[16, 16]} style={{ marginBottom: 32 }}>
                 <Col xs={24} md={8}>
-                    <Card title="진행중인 회고 스페이스 클릭률" loading={proceedingSpaceCtrLoading}>
+                    <Card title={<span>진행중인 회고 스페이스 클릭률 <AntTooltip title="진행중인 회고가 있는 스페이스를 유저가 실제로 클릭한 비율이에요. 회고 진행 중 참여 의지를 나타내는 지표로, 값이 높을수록 유저가 회고를 적극적으로 인식하고 있다는 신호예요."><QuestionCircleOutlined style={{ color: '#8A98A6', fontSize: 12 }} /></AntTooltip></span>} loading={proceedingSpaceCtrLoading}>
                         <div style={{ fontSize: 28, fontWeight: 700, color: '#1890ff', marginBottom: 8 }}>
                             {formatPercent(proceedingSpaceCtr)}
                         </div>
@@ -218,7 +219,7 @@ const SpaceAnalytics = ({ dateRange }) => {
                     </Card>
                 </Col>
                 <Col xs={24} md={8}>
-                    <Card title="테스크 진입/완료 비율" loading={taskEnterRateLoading}>
+                    <Card title={<span>테스크 진입/완료 비율 <AntTooltip title="진행중인 회고의 테스크 화면에 진입한 비율(진입률)과 완료한 비율(완료률)이에요. 진입률 대비 완료률 차이가 크면 테스크 완수에 장벽이 있다는 신호예요."><QuestionCircleOutlined style={{ color: '#8A98A6', fontSize: 12 }} /></AntTooltip></span>} loading={taskEnterRateLoading}>
                         <div style={{ marginBottom: 8 }}>
                             <span style={{ fontWeight: 500 }}>진입률: </span>
                             <span style={{ fontWeight: 700, color: '#52c41a' }}>{formatPercent(taskEnterRate)}</span>
@@ -233,7 +234,7 @@ const SpaceAnalytics = ({ dateRange }) => {
                     </Card>
                 </Col>
                 <Col xs={24} md={8}>
-                    <Card title="[🚨구현 보충 필요] 방치 비율" loading={abandonRateLoading}>
+                    <Card title={<span>[🚨구현 보충 필요] 방치 비율 <AntTooltip title="진행중인 회고가 7일 이상 아무도 작성하지 않은 채로 방치된 비율이에요. 값이 높을수록 팀 내 회고 동력이 낮다는 신호로, 알림·독려 기능 개선이 필요한 시점이에요."><QuestionCircleOutlined style={{ color: '#8A98A6', fontSize: 12 }} /></AntTooltip></span>} loading={abandonRateLoading}>
                         <div style={{ fontSize: 28, fontWeight: 700, color: '#ff4d4f', marginBottom: 8 }}>
                             {formatPercent(abandonRate)}
                         </div>
@@ -246,7 +247,7 @@ const SpaceAnalytics = ({ dateRange }) => {
 
             <Row gutter={[16, 16]}>
                 <Col xs={24} lg={12}>
-                    <Card title="팀 vs 개인 스페이스 비율" loading={loading}>
+                    <Card title={<span>팀 vs 개인 스페이스 비율 <AntTooltip title="선택 기간 동안 생성된 전체 스페이스 중 팀 스페이스와 개인 스페이스의 비율을 나타내요. 팀 스페이스 비율이 높을수록 협업 회고 중심으로 플랫폼이 활용되고 있다는 의미예요."><QuestionCircleOutlined style={{ color: '#8A98A6', fontSize: 12 }} /></AntTooltip></span>} loading={loading}>
                         <ResponsiveContainer width="100%" height={300}>
                             <PieChart>
                                 <Pie
@@ -274,7 +275,7 @@ const SpaceAnalytics = ({ dateRange }) => {
                     </Card>
                 </Col>
                 <Col xs={24} lg={12}>
-                    <Card title="모든 멤버의 팀스페이스 비율 평균" style={{ marginBottom: 16 }}>
+                    <Card title={<span>모든 멤버의 팀스페이스 비율 평균 <AntTooltip title="각 멤버가 보유한 스페이스 중 팀 스페이스의 비율을 구하고, 그 평균을 나타내요. 100%에 가까울수록 대부분의 유저가 팀 회고 중심으로 사용하고 있다는 의미예요."><QuestionCircleOutlined style={{ color: '#8A98A6', fontSize: 12 }} /></AntTooltip></span>} style={{ marginBottom: 16 }}>
                         <Statistic
                             value={teamSpaceRatioAvg !== null ? (teamSpaceRatioAvg * 100).toFixed(1) : '-'}
                             suffix="%"

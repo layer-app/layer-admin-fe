@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu, Card, Row, Col, Statistic, DatePicker, Button, Space, Typography } from 'antd';
+import { Layout, Menu, Card, Row, Col, Statistic, DatePicker, Button, Space, Typography, Tooltip } from 'antd';
 import {
     DashboardOutlined,
     UserOutlined,
@@ -8,7 +8,8 @@ import {
     LogoutOutlined,
     ReloadOutlined,
     AppstoreOutlined,
-    EditOutlined
+    EditOutlined,
+    QuestionCircleOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -121,7 +122,7 @@ const DashboardPage = () => {
                             <Col xs={24} sm={12} lg={6}>
                                 <Card>
                                     <Statistic
-                                        title="총 사용자"
+                                        title={<span>총 사용자 <Tooltip title="현재까지 가입한 전체 회원 수예요. (날짜 무관 전체 누적)"><QuestionCircleOutlined style={{ color: '#8A98A6', fontSize: 12 }} /></Tooltip></span>}
                                         value={outlineStats.totalMemberCount !== null ? outlineStats.totalMemberCount : '-'}
                                         prefix={<UserOutlined />}
                                         loading={loading}
@@ -131,7 +132,7 @@ const DashboardPage = () => {
                             <Col xs={24} sm={12} lg={6}>
                                 <Card>
                                     <Statistic
-                                        title="총 스페이스 수"
+                                        title={<span>총 스페이스 수 <Tooltip title="현재까지 생성된 전체 스페이스 수예요. 팀·개인 스페이스를 모두 포함해요. (날짜 무관 전체 누적)"><QuestionCircleOutlined style={{ color: '#8A98A6', fontSize: 12 }} /></Tooltip></span>}
                                         value={outlineStats.totalSpaceCount !== null ? outlineStats.totalSpaceCount : '-'}
                                         prefix={<AppstoreOutlined />}
                                         loading={loading}
@@ -141,7 +142,7 @@ const DashboardPage = () => {
                             <Col xs={24} sm={12} lg={6}>
                                 <Card>
                                     <Statistic
-                                        title="총 회고 수"
+                                        title={<span>총 회고 수 <Tooltip title="현재까지 생성된 전체 회고 수예요. created_at 기준으로 집계해요. (날짜 무관 전체 누적)"><QuestionCircleOutlined style={{ color: '#8A98A6', fontSize: 12 }} /></Tooltip></span>}
                                         value={outlineStats.totalRetrospectCount !== null ? outlineStats.totalRetrospectCount : '-'}
                                         prefix={<FileTextOutlined />}
                                         loading={loading}
@@ -151,7 +152,7 @@ const DashboardPage = () => {
                             <Col xs={24} sm={12} lg={6}>
                                 <Card>
                                     <Statistic
-                                        title="총 회고 답변 수"
+                                        title={<span>총 회고 답변 수 <Tooltip title="현재까지 기록된 전체 회고 답변 수예요. 회고 1건당 질문 수만큼 답변이 생성돼요. (날짜 무관 전체 누적)"><QuestionCircleOutlined style={{ color: '#8A98A6', fontSize: 12 }} /></Tooltip></span>}
                                         value={outlineStats.totalRetrospectAnswerCount !== null ? outlineStats.totalRetrospectAnswerCount : '-'}
                                         prefix={<EditOutlined />}
                                         loading={loading}

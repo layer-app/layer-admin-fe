@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Statistic, Progress, Table, Tabs, Typography, Tag } from 'antd';
+import { Card, Row, Col, Statistic, Progress, Table, Tabs, Typography, Tag, Tooltip as AntTooltip } from 'antd';
 import { Tooltip, PieChart, Pie, Cell } from 'recharts';
 import api from '../utils/api';
 import { getDateParams } from '../utils/dateParams';
-import { UserOutlined } from '@ant-design/icons';
+import { UserOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -111,7 +111,7 @@ const UserRetention = ({ dateRange, fullWidth = false }) => {
         <Row gutter={[16, 16]}>
             <Col xs={24} md={12}>
                 <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                    <Card title="회고 생성 리텐션 기간" loading={loading} style={{ marginBottom: 16, flex: 1 }}>
+                    <Card title={<span>회고 생성 리텐션 기간 <AntTooltip title="선택 기간 내 회고를 2회 이상 생성한 유저에 대해, 연속된 회고 생성 간의 최소 간격을 평균한 값이에요. 값이 짧을수록 유저가 더 자주 회고를 작성하고 있다는 신호예요."><QuestionCircleOutlined style={{ color: '#8A98A6', fontSize: 12 }} /></AntTooltip></span>} loading={loading} style={{ marginBottom: 16, flex: 1 }}>
                         <div style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>
                             {retentionPeriodSeconds !== null ? getHumanReadableDuration(retentionPeriodSeconds) : '-'}
                         </div>
@@ -122,7 +122,7 @@ const UserRetention = ({ dateRange, fullWidth = false }) => {
                             (해당 기간동안 만약 특정 유저가 여러 회고를 작성한 경우, 가장 짧은 기간을 선택하여 평균에 합산)
                         </div>
                     </Card>
-                    <Card title="스페이스당 누적 평균 회고 수" loading={loading} style={{ flex: 1 }}>
+                    <Card title={<span>스페이스당 누적 평균 회고 수 <AntTooltip title="선택한 기간 내 모든 스페이스의 누적 회고 수의 평균값이에요. 값이 높을수록 스페이스가 활발하게 회고를 이어가고 있다는 의미예요."><QuestionCircleOutlined style={{ color: '#8A98A6', fontSize: 12 }} /></AntTooltip></span>} loading={loading} style={{ flex: 1 }}>
                         <div style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>
                             {averageCumulativeCount !== null ? Number(averageCumulativeCount).toFixed(1) : '-'}
                         </div>
@@ -134,7 +134,7 @@ const UserRetention = ({ dateRange, fullWidth = false }) => {
             </Col>
             {/* 오른쪽: 기존 카드 */}
             <Col xs={24} md={12}>
-                <Card title="회고 생성 리텐션 비율" loading={loading} style={{ height: '100%' }}>
+                <Card title={<span>회고 생성 리텐션 비율 <AntTooltip title="선택 기간 동안 기존 유저는 회고 1개 이상, 신규 가입 유저는 2개 이상 생성한 비율이에요. 분자는 조건 충족 유저 수, 분모는 전체 유저 수예요."><QuestionCircleOutlined style={{ color: '#8A98A6', fontSize: 12 }} /></AntTooltip></span>} loading={loading} style={{ height: '100%' }}>
                     <div style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>
                         {retentionCreateCount !== null && retentionTotalMemberCount !== null
                             ? `${retentionCreateCount} / ${retentionTotalMemberCount}명 (${retentionTotalMemberCount > 0 ? ((retentionCreateCount / retentionTotalMemberCount) * 100).toFixed(1) : 0}%)`
@@ -189,6 +189,9 @@ const UserRetention = ({ dateRange, fullWidth = false }) => {
                 <Col flex="auto">
                     <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 4 }}>
                         유의미한 회고를 주기적으로 작성하는 사용자의 비율
+                        <AntTooltip title="날짜·최소 작성 횟수·최소 글자수 조건을 모두 충족하는 유저의 비율이에요. 아래 필터를 조정하여 원하는 코호트 기준으로 직접 산출할 수 있어요.">
+                            <QuestionCircleOutlined style={{ color: '#8A98A6', fontSize: 14, marginLeft: 6, verticalAlign: 'middle' }} />
+                        </AntTooltip>
                     </div>
                     <Statistic
                         value={filteredRatio}
