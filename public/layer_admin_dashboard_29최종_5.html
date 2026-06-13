@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Layer 어드민 — 회고 분석</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --sidebar-bg: #0D1F35;
+    --sidebar-hover: #162D47;
+    --sidebar-active: #1A3A57;
+    --sidebar-text: #8BA4BC;
+    --sidebar-text-active: #FFFFFF;
+    --sidebar-width: 220px;
+    --accent: #1677FF;
+    --accent-hover: #0E62E8;
+    --accent-light: #E6F4FF;
+    --page-bg: #F4F6F9;
+    --card-bg: #FFFFFF;
+    --card-border: #E8ECF0;
+    --text-primary: #000000;
+    --text-secondary: #5A6B7C;
+    --text-muted: #8A98A6;
+    --border: #E2E8EF;
+    --green: #52C41A;
+    --green-light: #F6FFED;
+    --red: #FF4D4F;
+    --red-light: #FEE2E2;
+    --amber: #FFBB28;
+    --amber-light: #FEF3C7;
+    --purple: #722ED1;
+    --purple-light: #EDE9FE;
+    --teal: #14B8A6;
+    --coral: #F97316;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; font-family: 'Noto Sans KR', sans-serif; background: var(--page-bg); color: var(--text-primary); font-size: 13px; line-height: 1.5; }
+
+  .layout { display: flex; min-height: 100vh; }
+
+  /* ─── Sidebar ─── */
+  .sidebar {
+    width: var(--sidebar-width);
+    background: var(--sidebar-bg);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+  .sidebar-logo {
+    padding: 20px 20px 16px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.3px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sidebar-logo-dot {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+  }
+  .sidebar-nav { padding: 12px 0; flex: 1; }
+  .nav-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 0.08em;
+    padding: 12px 20px 6px;
+    text-transform: uppercase;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 20px;
+    color: var(--sidebar-text);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 13px;
+    border-left: 3px solid transparent;
+  }
+  .nav-item:hover { background: var(--sidebar-hover); color: #fff; }
+  .nav-item.active {
+    background: var(--sidebar-active);
+    color: var(--sidebar-text-active);
+    border-left-color: var(--accent);
+    font-weight: 500;
+  }
+  .nav-icon {
+    width: 16px; height: 16px;
+    opacity: 0.7;
+    flex-shrink: 0;
+  }
+  .nav-item.active .nav-icon { opacity: 1; }
+
+  /* ─── Main ─── */
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+  /* ─── Topbar ─── */
+  .topbar {
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    padding: 0 28px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .topbar-title { font-size: 16px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.3px; }
+  .topbar-right { display: flex; align-items: center; gap: 6px; }
+  .date-picker {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0 8px;
+    height: 28px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    background: #fff;
+    cursor: pointer;
+  }
+  .date-picker input[type="date"] {
+    border: none;
+    outline: none;
+    font-size: 11px;
+    color: var(--text-primary);
+    font-family: 'Noto Sans KR', sans-serif;
+    background: transparent;
+    cursor: pointer;
+    width: 63px;
+    padding: 0;
+    margin: 0;
+    width: 76px;
+    padding: 0;
+    margin: 0;
+  }
+  .date-picker input[type="date"]::-webkit-calendar-picker-indicator {
+    display: none;
+    -webkit-appearance: none;
+  }
+  .date-picker input[type="date"]::-webkit-inner-spin-button {
+    display: none;
+  }
+  .date-sep { color: var(--text-muted); font-size: 11px; }
+  .topbar-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text-secondary);
+  }
+  .topbar-btn:hover { background: var(--page-bg); }
+  .topbar-btn.danger { color: var(--red); border-color: #fecaca; background: var(--red-light); }
+  .topbar-btn.danger:hover { background: #fee2e2; }
+
+  /* ─── Page Content ─── */
+  .page { padding: 28px; }
+  .page-heading { font-size: 20px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.4px; margin-bottom: 22px; text-align: center; }
+
+  /* ─── Section ─── */
+  .section-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0;
+    text-transform: uppercase;
+    padding: 20px 0 10px 8px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-label::before { display: none; }
+  .section-label:first-child { padding-top: 0; }
+
+  /* ─── KPI Grid ─── */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+  .kpi-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    padding: 16px 18px;
+    box-shadow: var(--shadow-sm);
+    min-width: 0;
+    position: relative;
+  }
+  .kpi-label { font-size: 11px; color: var(--text-muted); font-weight: 500; margin-bottom: 6px; word-break: keep-all; }
+  .kpi-value { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 4px; }
+  .kpi-delta { font-size: 11px; display: flex; align-items: center; gap: 4px; }
+  .kpi-delta.up { color: var(--green); }
+  .kpi-delta.dn { color: var(--red); }
+  .kpi-delta.neutral { color: var(--text-muted); }
+
+
+  /* ─── Tooltip ─── */
+  .tooltip-wrap { position: relative; display: inline-flex; align-items: center; }
+  .tooltip-icon {
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 1.5px solid var(--text-muted);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 600; color: var(--text-muted);
+    cursor: pointer; flex-shrink: 0;
+    transition: border-color .15s, color .15s; user-select: none;
+  }
+  .tooltip-icon:hover { border-color: var(--text-secondary); color: var(--text-secondary); }
+  .tooltip-box {
+    display: none; position: absolute; top: calc(100% + 8px); right: 0;
+    width: 240px; background: #1A2332; color: #E8ECF0;
+    font-size: 11px; line-height: 1.6; border-radius: var(--radius-md);
+    padding: 10px 13px; z-index: 9999;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18); pointer-events: none;
+  }
+  .tooltip-box::before {
+    content: ''; position: absolute; top: -5px; right: 5px;
+    width: 10px; height: 10px; background: #1A2332;
+    transform: rotate(45deg); border-radius: 2px;
+  }
+  .tooltip-wrap:hover .tooltip-box { display: block; }
+  .tooltip-title { font-size: 11px; font-weight: 600; color: #fff; margin-bottom: 5px; }
+
+  /* ─── Card ─── */
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-lg);
+    padding: 20px 22px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 14px;
+    min-width: 0;
+  }
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .card-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+  .card-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .card-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 20px;
+    letter-spacing: 0.02em;
+  }
+
+  /* ─── Two col ─── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+
+  @media (max-width: 1200px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    .grid-3 { grid-template-columns: 1fr 1fr; }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 900px) {
+    :root { --sidebar-width: 0px; }
+    .sidebar { display: none; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .type-grid { grid-template-columns: repeat(2, 1fr); }
+    .ug { grid-template-columns: repeat(2, 1fr); }
+    .topbar { flex-wrap: wrap; height: auto; padding: 10px 16px; gap: 8px; }
+    .page { padding: 16px; }
+  }
+  @media (max-width: 600px) {
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+    .topbar-right { flex-wrap: wrap; gap: 4px; }
+  }
+
+  .kpi-5 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; margin-bottom: 1.25rem; overflow: visible; }
+  .grid-inline-3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; margin-bottom: 14px; }
+  @media (max-width: 1200px) {
+    .kpi-5 { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    .grid-inline-3 { grid-template-columns: 1fr 1fr; }
+    .grid-2 { grid-template-columns: 1fr; }
+    .grid-3 { grid-template-columns: 1fr 1fr; }
+    .kpi-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  }
+  @media (max-width: 900px) {
+    :root { --sidebar-width: 0px; }
+    .sidebar { display: none; }
+    .grid-2, .grid-3, .grid-inline-3 { grid-template-columns: 1fr; }
+    .kpi-grid, .kpi-5 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .type-grid { grid-template-columns: repeat(2, 1fr); }
+    .topbar { flex-wrap: wrap; height: auto; padding: 10px 16px; gap: 8px; }
+    .page { padding: 16px; }
+  }
+  @media (max-width: 600px) {
+    .kpi-grid, .kpi-5 { grid-template-columns: 1fr 1fr; }
+    .topbar-right { flex-wrap: wrap; gap: 4px; }
+  }
+  .chart-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    background: var(--page-bg);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    margin-bottom: 14px;
+  }
+  .chart-desc li { margin-bottom: 4px; list-style: none; padding-left: 0; }
+  .chart-desc li::before { content: '- '; color: var(--text-muted); }
+
+  /* ─── Funnel bars ─── */
+  .funnel-row { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; }
+  .funnel-lbl { font-size: 11px; font-weight: 500; width: 84px; flex-shrink: 0; text-align: right; }
+  .funnel-track { flex: 1; height: 28px; background: #F0F4F8; border-radius: 6px; overflow: hidden; }
+  .funnel-fill { height: 100%; border-radius: 6px; display: flex; align-items: center; padding-left: 10px; font-size: 11px; font-weight: 600; transition: width 0.4s ease; }
+  .funnel-count { font-size: 11px; color: var(--text-muted); width: 56px; flex-shrink: 0; }
+  .funnel-note { font-size: 11px; color: var(--red); padding: 2px 0 5px 94px; }
+  .funnel-note.ok { color: var(--green); }
+
+  /* ─── Goal bars ─── */
+  .goal-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .goal-lbl { font-size: 11px; font-weight: 500; width: 64px; flex-shrink: 0; text-align: right; }
+  .goal-track { flex: 1; height: 8px; background: #F0F4F8; border-radius: 4px; overflow: hidden; }
+  .goal-fill { height: 100%; border-radius: 4px; }
+  .goal-pct { font-size: 11px; font-weight: 600; width: 36px; flex-shrink: 0; text-align: right; }
+  .goal-diff { font-size: 11px; width: 52px; flex-shrink: 0; }
+  .goal-diff.up { color: var(--green); }
+  .goal-diff.dn { color: var(--red); }
+
+  /* ─── Type cards ─── */
+  .type-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+  .type-card {
+    border: 1.5px solid var(--card-border);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: #fff;
+  }
+  .type-card:hover { border-color: var(--accent); box-shadow: var(--shadow-sm); }
+  .type-card.active { border-color: var(--accent); background: var(--accent-light); }
+  .type-pct { font-size: 20px; font-weight: 700; margin-bottom: 3px; }
+  .type-name { font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
+  .type-meta { font-size: 10px; color: var(--text-muted); }
+
+  /* ─── Timeline ─── */
+  .tl-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+  .tl-date { font-size: 10px; color: var(--text-muted); width: 40px; flex-shrink: 0; text-align: right; }
+  .tl-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .tl-bar { flex: 1; height: 20px; border-radius: 4px; display: flex; align-items: center; padding: 0 9px; justify-content: space-between; }
+  .tl-label { font-size: 10px; font-weight: 600; }
+  .tl-score { font-size: 10px; }
+
+  /* ─── Stat mini ─── */
+  .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; }
+  .stat-cell { background: var(--page-bg); border-radius: var(--radius-sm); padding: 9px 11px; }
+  .stat-val { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+  .stat-lbl { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+
+  /* ─── Tags ─── */
+  .tag { display: inline-flex; align-items: center; border-radius: 20px; padding: 2px 9px; font-size: 10px; font-weight: 600; margin: 2px 2px 0 0; }
+
+  /* ─── Retention bars ─── */
+  .ret-row { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; }
+  .ret-lbl { font-size: 11px; font-weight: 500; width: 60px; flex-shrink: 0; text-align: right; }
+  .ret-track { flex: 1; height: 26px; background: #F0F4F8; border-radius: 6px; overflow: hidden; }
+  .ret-fill { height: 100%; border-radius: 6px; display: flex; align-items: center; padding-left: 9px; font-size: 11px; font-weight: 600; }
+  .ret-badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; margin-left: 8px; flex-shrink: 0; }
+
+  /* ─── Legend ─── */
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-secondary); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+  /* ─── Insight box ─── */
+  .insight-box { background: #EBF3FF; border-radius: var(--radius-sm); padding: 9px 13px; font-size: 12px; color: #1E4D8C; line-height: 1.6; margin-top: 10px; }
+  .warn-box { background: #FEF3C7; border-radius: var(--radius-sm); padding: 9px 13px; font-size: 12px; color: #78350F; line-height: 1.6; margin-top: 10px; }
+
+  /* ─── Scrollbar ─── */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+
+  .nav-item .badge-count { font-size: 10px; background: var(--accent); color: #fff; border-radius: 10px; padding: 1px 6px; margin-left: auto; }
+</style>
+</head>
+<body>
+<div class="layout" id="page-retro">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      Layer 어드민
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item" onclick="highlightNav(this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
+        개요
+      </div>
+      <div class="nav-item" onclick="showPage('template', this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><line x1="5" y1="8" x2="11" y2="8"/><line x1="5" y1="5" x2="11" y2="5"/><line x1="5" y1="11" x2="8" y2="11"/></svg>
+        템플릿 분석
+      </div>
+      <div class="nav-item" onclick="showPage('retention', this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="2,12 5,8 8,10 11,5 14,7"/></svg>
+        리텐션 분석
+      </div>
+      <div class="nav-item active" onclick="showPage('retro', this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="8" width="3" height="6" rx="1"/><rect x="6.5" y="5" width="3" height="9" rx="1"/><rect x="11" y="2" width="3" height="12" rx="1"/></svg>
+        회고 작성 분석
+      </div>
+      <div class="nav-item" onclick="highlightNav(this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="10" height="7" rx="2"/><path d="M4 10v2"/><path d="M7 10v2"/><path d="M3 12h5"/><rect x="8" y="6" width="6" height="5" rx="1.5"/></svg>
+        스페이스 분석
+      </div>
+      <div class="nav-item" onclick="highlightNav(this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="2.5"/><path d="M3 13c0-2.8 2.2-5 5-5s5 2.2 5 5"/><line x1="11" y1="2" x2="14" y2="2"/><line x1="12.5" y1="0.5" x2="12.5" y2="3.5"/></svg>
+        회원가입 분석
+      </div>
+    </nav>
+    <div style="border-top: 1px solid rgba(255,255,255,0.07);">
+      <div class="nav-item" onclick="alert('로그아웃')" style="border-left:3px solid transparent;gap:10px;">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:0.7;"><path d="M10 2h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-3"/><polyline points="7,11 10,8 7,5"/><line x1="10" y1="8" x2="2" y2="8"/></svg>
+        로그아웃
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="topbar-title">회고 작성 분석</div>
+        <!-- 전체/팀/개인 탭 -->
+        <div style="display:flex;gap:2px;background:#F0F4F8;border-radius:8px;padding:3px;">
+          <button id="scope-all" onclick="switchScope('all')" style="font-size:11px;font-weight:600;padding:4px 12px;border-radius:6px;border:none;background:#fff;color:var(--text-primary);cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.08);transition:all 0.15s;">전체</button>
+          <button id="scope-team" onclick="switchScope('team')" style="font-size:11px;font-weight:500;padding:4px 12px;border-radius:6px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;transition:all 0.15s;">팀</button>
+          <button id="scope-personal" onclick="switchScope('personal')" style="font-size:11px;font-weight:500;padding:4px 12px;border-radius:6px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;transition:all 0.15s;">개인</button>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div style="display:flex;gap:3px;">
+          <button onclick="setDateRange(30)" style="font-size:11px;font-weight:500;padding:0 8px;height:28px;border-radius:var(--radius-sm);border:1px solid var(--border);background:#fff;color:var(--text-secondary);cursor:pointer;transition:all 0.15s;line-height:28px;" onmouseover="this.style.background='var(--page-bg)'" onmouseout="this.style.background='#fff'">30일</button>
+          <button onclick="setDateRange(60)" style="font-size:11px;font-weight:500;padding:0 8px;height:28px;border-radius:var(--radius-sm);border:1px solid var(--border);background:#fff;color:var(--text-secondary);cursor:pointer;transition:all 0.15s;line-height:28px;" onmouseover="this.style.background='var(--page-bg)'" onmouseout="this.style.background='#fff'">60일</button>
+          <button onclick="setDateRange(90)" style="font-size:11px;font-weight:500;padding:0 8px;height:28px;border-radius:var(--radius-sm);border:1px solid var(--border);background:#fff;color:var(--text-secondary);cursor:pointer;transition:all 0.15s;line-height:28px;" onmouseover="this.style.background='var(--page-bg)'" onmouseout="this.style.background='#fff'">90일</button>
+        </div>
+        <div class="date-picker">
+          <input type="date" id="date-from" value="2026-03-13">
+          <span class="date-sep">→</span>
+          <input type="date" id="date-to" value="2026-04-12">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#1A2332" stroke-width="1.5"><rect x="2" y="3" width="12" height="11" rx="2"/><line x1="5" y1="1" x2="5" y2="5"/><line x1="11" y1="1" x2="11" y2="5"/><line x1="2" y1="7" x2="14" y2="7"/></svg>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page -->
+    <div class="page" id="page-retro">
+
+      <!-- ── 상단 요약 KPI ── -->
+      <div class="kpi-5" style="grid-template-columns: repeat(5, minmax(0,1fr));">
+        <div class="kpi-card" style="position:relative;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;"><div class="kpi-label">기간 내 생성된 회고 수</div><div class="tooltip-wrap"><div class="tooltip-icon" style="width:14px;height:14px;font-size:9px;">?</div><div class="tooltip-box"><div class="tooltip-title">기간 내 생성된 회고 수</div>선택한 기간 동안 새로 생성된 회고의 수예요. created_at 기준으로 집계해요.</div></div></div>
+          <div class="kpi-value" style="color:var(--text-primary);" id="kpi-period">1,248</div>
+        </div>
+        <div class="kpi-card" style="position:relative;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;"><div class="kpi-label">기간 내 완료된 회고 수</div><div class="tooltip-wrap"><div class="tooltip-icon" style="width:14px;height:14px;font-size:9px;">?</div><div class="tooltip-box"><div class="tooltip-title">기간 내 완료된 회고 수</div>선택한 기간 동안 제출이 완료된 회고의 수예요. submitted_at 값이 존재하는 회고를 완료로 간주해요.</div></div></div>
+          <div class="kpi-value" style="color:var(--text-primary);" id="kpi-done">898</div>
+        </div>
+        <div class="kpi-card" style="position:relative;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;"><div class="kpi-label">평균 제출 완료율</div><div class="tooltip-wrap"><div class="tooltip-icon" style="width:14px;height:14px;font-size:9px;">?</div><div class="tooltip-box"><div class="tooltip-title">평균 제출 완료율</div>기간 내 완료된 회고 수 ÷ 생성된 회고 수 × 100으로 계산해요.</div></div></div>
+          <div class="kpi-value" style="color:var(--text-primary);" id="kpi-rate">72%</div>
+        </div>
+        <div class="kpi-card" style="position:relative;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;"><div class="kpi-label">평균 작성 시간</div><div class="tooltip-wrap"><div class="tooltip-icon" style="width:14px;height:14px;font-size:9px;">?</div><div class="tooltip-box"><div class="tooltip-title">평균 작성 시간</div>회고 질문 화면 진입 후 제출까지의 소요 시간 평균이에요. 완료된 회고만 대상으로 계산해요.</div></div></div>
+          <div class="kpi-value" style="color:var(--text-primary);" id="kpi-time">12.4분</div>
+        </div>
+        <div class="kpi-card" style="position:relative;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;"><div class="kpi-label">평균 글자수</div><div class="tooltip-wrap"><div class="tooltip-icon" style="width:14px;height:14px;font-size:9px;">?</div><div class="tooltip-box"><div class="tooltip-title">평균 글자수</div>완료된 회고의 전체 항목 입력 글자 수 합산 평균이에요. 공백 포함 기준으로 계산해요.</div></div></div>
+          <div class="kpi-value" style="color:var(--text-primary);" id="kpi-chars">342자</div>
+        </div>
+      </div>
+
+      <!-- ── 작성 습관 ── -->
+      <div class="section-label">작성 습관</div>
+
+      <div class="grid-3">
+        <div class="card" style="margin-bottom:0;">
+          <div class="card-header">
+            <div>
+              <div class="card-title">작성 주기별 유저 분포</div>
+              <div class="card-sub">선택 기간 기준 · 평균 작성 주기 <span style="font-weight:600;color:#004336;">8.2일</span></div>
+            </div>
+            <div class="tooltip-wrap"><div class="tooltip-icon">?</div><div class="tooltip-box" style="width:260px;"><div class="tooltip-title">작성 주기별 유저 분포</div><p style="margin-bottom:10px;">선택 기간 동안 유저의 회고 작성 주기를 5개 구간으로 분류한 차트예요. 주기적(7일↓) 비율이 높을수록 습관 형성이 잘 되고 있는 신호예요.</p><div class="tooltip-title">평균 작성 주기란?</div><p>유저가 회고를 작성하는 평균 간격(일수)이에요. 값이 낮을수록 더 자주 회고를 쓰고 있다는 의미로, 현재 8.2일은 약 주 1회 수준이에요. 주기적 구간(D90 리텐션 83%)과 휴면 구간(4%)의 차이를 고려하면, 이 수치를 7일 이하로 낮추는 것이 리텐션 개선의 핵심 레버예요.</p></div></div>
+          </div>
+          <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#007962;"></div>주기적 (7일↓)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#00C49F;"></div>격주~월 (8~30일)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#57D7C1;"></div>분기적 (31~90일)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#FFBB28;"></div>비정기 (91~180일)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#FD8A8D;"></div>휴면 (181일+)</div>
+          </div>
+          <div style="position:relative;height:220px;"><canvas id="hc1" role="img" aria-label="작성 주기별 분포">작성 주기 분포</canvas></div>
+        </div>
+        <div class="card" style="margin-bottom:0;">
+          <div class="card-header"><div><div class="card-title">작성 주기 분포 월별 추이</div><div class="card-sub">선택한 달 기준 최근 6개월</div></div><div class="tooltip-wrap"><div class="tooltip-icon">?</div><div class="tooltip-box"><div class="tooltip-title">작성 주기 분포 월별 추이</div>월별로 작성 주기별 유저 비율이 어떻게 변해왔는지 보여줘요. 분기적·비정기 유저의 패턴은 8주보다 12개월 추이에서 더 명확하게 드러나요. 3·6·9·12월에 분기적 유저가 증가하면 프로젝트 마일스톤 패턴으로 해석할 수 있어요.</div></div></div>
+          <div style="position:relative;height:240px;"><canvas id="hc2" role="img" aria-label="8주 추이">8주 추이</canvas></div>
+        </div>
+        <div class="card" style="margin-bottom:0;">
+          <div class="card-header"><div><div class="card-title">작성 시간 분포</div><div class="card-sub">선택 기간 내 제출된 회고 기준</div></div><div class="tooltip-wrap"><div class="tooltip-icon">?</div><div class="tooltip-box"><div class="tooltip-title">작성 시간 분포</div>회고 질문 조회 시점부터 제출까지의 소요 시간을 구간별로 집계해요. 5분 이하 구간이 많으면 충분한 고민 없이 빠르게 완료하는 유저가 많다는 신호예요.</div></div></div>
+          <div style="position:relative;height:240px;"><canvas id="tc1" role="img" aria-label="작성 시간 분포">시간 분포</canvas></div>
+        </div>
+      </div>
+
+      <!-- ── 완료율 퍼널 ── -->
+      <div class="section-label">완료 현황</div>
+
+
+
+      <div class="grid-2">
+        <!-- 완수율 퍼널 — 회고 수 기준 -->
+        <div class="card" style="margin-bottom:0;">
+          <div class="card-header"><div><div class="card-title">회고 완수 퍼널</div><div class="card-sub" style="font-size:11px;color:var(--text-muted);">선택 기간 내 생성된 회고 기준</div></div><div class="tooltip-wrap"><div class="tooltip-icon">?</div><div class="tooltip-box"><div class="tooltip-title">회고 완수 퍼널</div>선택한 기간 내 생성된 회고 건수를 기준으로 각 완수 단계까지 도달한 비율을 보여줘요. 유저 기준보다 제출 완수율이 높게 나오면 한 유저가 여러 번 쓰면서 점점 완수율이 올라가는 재작성 효과를 의미해요.</div></div></div>
+
+          <div style="display:flex;gap:4px;margin:12px 0 16px;">
+            <button id="ftab-all" onclick="switchFunnelTab('all')" style="font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;transition:all 0.15s;">전체</button>
+            <button id="ftab-single" onclick="switchFunnelTab('single')" style="font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;border:1px solid var(--border);background:#fff;color:var(--text-secondary);cursor:pointer;transition:all 0.15s;">1회 방문 유저 <span style="color:var(--text-muted);">63%</span></button>
+            <button id="ftab-multi" onclick="switchFunnelTab('multi')" style="font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;border:1px solid var(--border);background:#fff;color:var(--text-secondary);cursor:pointer;transition:all 0.15s;">다회 방문 유저 <span style="color:var(--text-muted);">37%</span></button>
+          </div>
+
+          <div class="funnel-row">
+            <span class="funnel-lbl" style="color:var(--text-muted);">생성</span>
+            <div class="funnel-track"><div class="funnel-fill" id="rf0" style="width:100%;background:#00C49F;color:#fff;">100% · 4,820건</div></div>
+            <div class="tooltip-wrap"><div class="tooltip-icon" style="width:13px;height:13px;font-size:9px;flex-shrink:0;">?</div><div class="tooltip-box"><div class="tooltip-title">생성된 회고 수</div>선택한 기간 내 생성된 전체 회고 수예요. 이하 완수율 지표의 분모 기준이에요.</div></div>
+          </div>
+          <div class="funnel-note" id="rn0">▼ 22% 시작 미완료 회고</div>
+          <div class="funnel-row">
+            <span class="funnel-lbl" style="color:#52C41A;font-weight:600;">시작 완수율</span>
+            <div class="funnel-track"><div class="funnel-fill" id="rf1" style="width:78%;background:#34D399;color:#fff;">78% · 3,760건</div></div>
+            <div class="tooltip-wrap"><div class="tooltip-icon" style="width:13px;height:13px;font-size:9px;flex-shrink:0;">?</div><div class="tooltip-box"><div class="tooltip-title">시작 완수율</div>생성된 회고 중 첫 항목에 1자 이상 입력된 회고 수 ÷ 생성된 전체 회고 수예요.</div></div>
+          </div>
+          <div class="funnel-note" id="rn1">▼ 17% 형식 미충족 회고</div>
+          <div class="funnel-row">
+            <span class="funnel-lbl" style="color:#722ED1;font-weight:600;">형식 완수율</span>
+            <div class="funnel-track"><div class="funnel-fill" id="rf2" style="width:61%;background:#A78BFA;color:#fff;">61% · 2,940건</div></div>
+            <div class="tooltip-wrap"><div class="tooltip-icon" style="width:13px;height:13px;font-size:9px;flex-shrink:0;">?</div><div class="tooltip-box"><div class="tooltip-title">형식 완수율</div>초성만 작성하거나 5자 이내 작성 항목 없이, 필수 항목을 모두 채우고 최소 글자 수 이상을 충족한 회고 수 ÷ 생성된 전체 회고 수예요.</div></div>
+          </div>
+          <div class="funnel-note" id="rn2">▼ 16% 제출 미완료 회고</div>
+          <div class="funnel-row">
+            <span class="funnel-lbl" style="color:#FF4D4F;font-weight:600;">제출 완수율</span>
+            <div class="funnel-track"><div class="funnel-fill" id="rf3" style="width:45%;background:#F87171;color:#fff;">45% · 2,169건</div></div>
+            <div class="tooltip-wrap"><div class="tooltip-icon" style="width:13px;height:13px;font-size:9px;flex-shrink:0;">?</div><div class="tooltip-box"><div class="tooltip-title">제출 완수율</div>형식 완수 조건을 충족하고 최종 제출까지 완료한 회고 수 ÷ 생성된 전체 회고 수예요.</div></div>
+          </div>
+
+        </div>
+
+        <!-- 월별 제출 완료율 추이 -->
+        <div class="card" style="margin-bottom:0;">
+          <div class="card-header">
+            <div>
+              <div class="card-title">월별 제출 완료율 추이</div>
+              <div class="card-sub">선택한 달 기준 최근 12개월</div>
+            </div>
+            <div class="tooltip-wrap"><div class="tooltip-icon">?</div><div class="tooltip-box"><div class="tooltip-title">월별 완료율 트렌드</div>팀 회고와 개인 회고의 완료율을 월별로 비교해요. 팀 완료율이 개인보다 꾸준히 높은 경향이 있으며, 7월 저점은 방학·휴가 시즌 영향으로 해석할 수 있어요.</div></div>
+          </div>
+          <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--text-muted);"></div>전체 완료율</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#1677FF;"></div>팀 완료율</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#00C49F;"></div>개인 완료율</div>
+          </div>
+          <div style="position:relative;height:240px;">
+            <canvas id="trend1" role="img" aria-label="월별 완료율 트렌드 차트">월별 완료율 트렌드</canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 유저 타입 분석 ── -->
+      <div class="section-label" style="margin-top:8px;">유저 타입 분석</div>
+
+      <div class="type-grid">
+        <div class="type-card active" id="tc-habit" onclick="selType('habit')">
+          <div class="type-pct" style="color:#007962;">46%</div>
+          <div class="type-name">습관형</div>
+          <div class="type-meta">평균 간격 6.8일 · D30 81%</div>
+        </div>
+        <div class="type-card" id="tc-burst" onclick="selType('burst')">
+          <div class="type-pct" style="color:#722ED1;">28%</div>
+          <div class="type-name">집중형</div>
+          <div class="type-meta">평균 간격 2.1일 · D30 54%</div>
+        </div>
+        <div class="type-card" id="tc-passive" onclick="selType('passive')">
+          <div class="type-pct" style="color:#92400E;">18%</div>
+          <div class="type-name">수동형</div>
+          <div class="type-meta">평균 간격 14.3일 · D30 39%</div>
+        </div>
+        <div class="type-card" id="tc-ghost" onclick="selType('ghost')">
+          <div class="type-pct" style="color:#991B1B;">8%</div>
+          <div class="type-name">유령형</div>
+          <div class="type-meta">평균 간격 — · D30 8%</div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:14px;">
+        <!-- 타입별 완수율 퍼널 + 지표 -->
+        <div class="card" style="margin-bottom:0;">
+          <div class="card-header">
+            <div class="card-title" id="type-title">습관형 — 완수율 퍼널</div>
+            <div class="tooltip-wrap"><div class="tooltip-icon">?</div><div class="tooltip-box" style="width:260px;"><div class="tooltip-title">유저 타입별 완수율 퍼널</div>선택한 유저 타입의 시작·형식·제출 완수율을 비교해요. 습관형은 전 단계에서 전체 평균보다 높고, 유령형은 가장 낮아요. 타입 간 완수율 격차가 클수록 개입 우선순위가 명확해져요.</div></div>
+          </div>
+          <div class="funnel-row">
+            <span class="funnel-lbl" style="color:#52C41A;font-weight:600;">시작 완수율</span>
+            <div class="funnel-track"><div class="funnel-fill" id="tf0" style="width:96%;background:#34D399;color:#fff;">96%</div></div>
+          </div>
+          <div class="funnel-row">
+            <span class="funnel-lbl" style="color:#722ED1;font-weight:600;">형식 완수율</span>
+            <div class="funnel-track"><div class="funnel-fill" id="tf1" style="width:89%;background:#A78BFA;color:#fff;">89%</div></div>
+          </div>
+          <div class="funnel-row">
+            <span class="funnel-lbl" style="color:#FF4D4F;font-weight:600;">제출 완수율</span>
+            <div class="funnel-track"><div class="funnel-fill" id="tf2" style="width:78%;background:#F87171;color:#fff;">78%</div></div>
+          </div>
+          <div class="stat-grid" style="margin-top:14px;">
+            <div class="stat-cell">
+              <div class="stat-val" id="ts-gen">4.2회</div>
+              <div style="display:flex;align-items:center;gap:4px;margin-top:1px;">
+                <div class="stat-lbl">회고 생성 횟수</div>
+                <div class="tooltip-wrap"><div class="tooltip-icon" style="width:12px;height:12px;font-size:9px;">?</div><div class="tooltip-box"><div class="tooltip-title">회고 생성 횟수</div>선택 기간 동안 해당 타입 유저가 평균적으로 생성한 회고 수예요.</div></div>
+              </div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-val" id="ts-intv">6.8일</div>
+              <div style="display:flex;align-items:center;gap:4px;margin-top:1px;">
+                <div class="stat-lbl">평균 작성 간격</div>
+                <div class="tooltip-wrap"><div class="tooltip-icon" style="width:12px;height:12px;font-size:9px;">?</div><div class="tooltip-box"><div class="tooltip-title">평균 작성 간격</div>회고 작성 사이의 평균 일수예요. 낮을수록 더 자주 회고를 쓰고 있어요.</div></div>
+              </div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-val" id="ts-d30">81%</div>
+              <div style="display:flex;align-items:center;gap:4px;margin-top:1px;">
+                <div class="stat-lbl">D30 리텐션</div>
+                <div class="tooltip-wrap"><div class="tooltip-icon" style="width:12px;height:12px;font-size:9px;">?</div><div class="tooltip-box"><div class="tooltip-title">D30 리텐션</div>첫 회고 작성 후 30일 내에 재작성한 유저 비율이에요.</div></div>
+              </div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-val" id="ts-time">23분</div>
+              <div style="display:flex;align-items:center;gap:4px;margin-top:1px;">
+                <div class="stat-lbl">평균 작성 시간</div>
+                <div class="tooltip-wrap"><div class="tooltip-icon" style="width:12px;height:12px;font-size:9px;">?</div><div class="tooltip-box"><div class="tooltip-title">평균 작성 시간</div>회고 질문 화면 진입 후 제출까지의 소요 시간 평균이에요. 완료된 회고만 대상으로 계산해요.</div></div>
+              </div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-val" id="ts-comp">78%</div>
+              <div style="display:flex;align-items:center;gap:4px;margin-top:1px;">
+                <div class="stat-lbl">제출 완수율</div>
+                <div class="tooltip-wrap"><div class="tooltip-icon" style="width:12px;height:12px;font-size:9px;">?</div><div class="tooltip-box"><div class="tooltip-title">제출 완수율</div>생성된 회고 중 최종 제출까지 완료한 비율이에요. 기간 내 완료 수 ÷ 생성 수 × 100으로 계산해요.</div></div>
+              </div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-val" id="ts-goal">91%</div>
+              <div style="display:flex;align-items:center;gap:4px;margin-top:1px;">
+                <div class="stat-lbl">목표 달성율</div>
+                <div class="tooltip-wrap"><div class="tooltip-icon" style="width:12px;height:12px;font-size:9px;">?</div><div class="tooltip-box"><div class="tooltip-title">목표 달성율</div>실행 목표를 1개 이상 설정하고, 다음 회고에서 달성 여부를 기록한 유저 비율이에요.</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="insight-box" id="type-insight">제출 완수율 전체 평균의 2.5배. 습관형으로의 전환이 최우선 온보딩 목표.</div>
+          <div class="warn-box" id="type-action">▶ 온보딩 목표를 "7일 내 3회 + 제출 완수 2회"로 상향</div>
+        </div>
+
+        <!-- 대표 유저 샘플 -->
+        <div class="card" style="margin-bottom:0;">
+          <div class="card-header">
+            <div>
+              <div class="card-title">대표 유저 샘플</div>
+              <div class="card-sub">해당 타입을 가장 잘 대표하는 유저예요</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div style="display:flex;align-items:center;gap:4px;">
+                <button onclick="prevUser()" style="width:22px;height:22px;border-radius:50%;border:1px solid var(--border);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;">‹</button>
+                <span id="user-page" style="font-size:10px;color:var(--text-muted);">1 / 3</span>
+                <button onclick="nextUser()" style="width:22px;height:22px;border-radius:50%;border:1px solid var(--border);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;">›</button>
+              </div>
+              <div class="tooltip-wrap"><div class="tooltip-icon">?</div><div class="tooltip-box"><div class="tooltip-title">대표 유저 샘플</div>각 유저 타입을 가장 잘 대표하는 유저 3명이에요. 대표도는 해당 타입 특성 패턴과의 일치도 점수 기준으로 선정돼요.</div></div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <div id="user-avatar" style="width:36px;height:36px;border-radius:50%;background:#F6FFED;color:#007962;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;"></div>
+            <div>
+              <div id="user-name" style="font-size:13px;font-weight:600;"></div>
+              <div id="user-meta" style="font-size:10px;color:var(--text-muted);"></div>
+            </div>
+          </div>
+          <div id="user-timeline" style="margin-bottom:10px;"></div>
+          <div id="user-tags"></div>
+        </div>
+      </div>
+
+      <div style="height:32px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── 템플릿 분석 페이지 ── -->
+<div class="layout" id="page-template" style="display:none;">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      Layer 어드민
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item" onclick="highlightNav(this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
+        개요
+      </div>
+      <div class="nav-item active" onclick="showPage('template', this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><line x1="5" y1="8" x2="11" y2="8"/><line x1="5" y1="5" x2="11" y2="5"/><line x1="5" y1="11" x2="8" y2="11"/></svg>
+        템플릿 분석
+      </div>
+      <div class="nav-item" onclick="showPage('retention', this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="2,12 5,8 8,10 11,5 14,7"/></svg>
+        리텐션 분석
+      </div>
+      <div class="nav-item" onclick="showPage('retro', this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="8" width="3" height="6" rx="1"/><rect x="6.5" y="5" width="3" height="9" rx="1"/><rect x="11" y="2" width="3" height="12" rx="1"/></svg>
+        회고 작성 분석
+      </div>
+      <div class="nav-item" onclick="highlightNav(this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="10" height="7" rx="2"/><path d="M4 10v2"/><path d="M7 10v2"/><path d="M3 12h5"/><rect x="8" y="6" width="6" height="5" rx="1.5"/></svg>
+        스페이스 분석
+      </div>
+      <div class="nav-item" onclick="highlightNav(this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="2.5"/><path d="M3 13c0-2.8 2.2-5 5-5s5 2.2 5 5"/><line x1="11" y1="2" x2="14" y2="2"/><line x1="12.5" y1="0.5" x2="12.5" y2="3.5"/></svg>
+        회원가입 분석
+      </div>
+    </nav>
+    <div style="border-top: 1px solid rgba(255,255,255,0.07);">
+      <div class="nav-item" onclick="alert('로그아웃')" style="border-left:3px solid transparent;gap:10px;">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:0.7;"><path d="M10 2h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-3"/><polyline points="7,11 10,8 7,5"/><line x1="10" y1="8" x2="2" y2="8"/></svg>
+        로그아웃
+      </div>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="topbar-title">템플릿 분석</div>
+        <div style="display:flex;gap:2px;background:#F0F4F8;border-radius:8px;padding:3px;">
+          <button id="tscope-all" onclick="switchTScope('all')" style="font-size:11px;font-weight:600;padding:4px 12px;border-radius:6px;border:none;background:#fff;color:var(--text-primary);cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.08);transition:all 0.15s;">전체</button>
+          <button id="tscope-team" onclick="switchTScope('team')" style="font-size:11px;font-weight:500;padding:4px 12px;border-radius:6px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;transition:all 0.15s;">팀</button>
+          <button id="tscope-personal" onclick="switchTScope('personal')" style="font-size:11px;font-weight:500;padding:4px 12px;border-radius:6px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;transition:all 0.15s;">개인</button>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div style="display:flex;gap:3px;">
+          <button onclick="setTDateRange(30)" style="font-size:11px;font-weight:500;padding:0 8px;height:28px;border-radius:var(--radius-sm);border:1px solid var(--border);background:#fff;color:var(--text-secondary);cursor:pointer;transition:all 0.15s;line-height:28px;" onmouseover="this.style.background='var(--page-bg)'" onmouseout="this.style.background='#fff'">30일</button>
+          <button onclick="setTDateRange(60)" style="font-size:11px;font-weight:500;padding:0 8px;height:28px;border-radius:var(--radius-sm);border:1px solid var(--border);background:#fff;color:var(--text-secondary);cursor:pointer;transition:all 0.15s;line-height:28px;" onmouseover="this.style.background='var(--page-bg)'" onmouseout="this.style.background='#fff'">60일</button>
+          <button onclick="setTDateRange(90)" style="font-size:11px;font-weight:500;padding:0 8px;height:28px;border-radius:var(--radius-sm);border:1px solid var(--border);background:#fff;color:var(--text-secondary);cursor:pointer;transition:all 0.15s;line-height:28px;" onmouseover="this.style.background='var(--page-bg)'" onmouseout="this.style.background='#fff'">90일</button>
+        </div>
+        <div class="date-picker">
+          <input type="date" id="tdate-from" value="2026-03-13">
+          <span class="date-sep">→</span>
+          <input type="date" id="tdate-to" value="2026-04-12">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#1A2332" stroke-width="1.5"><rect x="2" y="3" width="12" height="11" rx="2"/><line x1="5" y1="1" x2="5" y2="5"/><line x1="11" y1="1" x2="11" y2="5"/><line x1="2" y1="7" x2="14" y2="7"/></svg>
+        </div>
+      </div>
+    </header>
+    <div class="page">
+      <div class="section-label" style="padding-top:0;">템플릿 분석</div>
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:center;height:200px;color:var(--text-muted);font-size:13px;">
+          준비 중인 페이지예요.
+        </div>
+      </div>
+      <div style="height:32px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── 리텐션 분석 페이지 ── -->
+<div class="layout" id="page-retention" style="display:none;">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      Layer 어드민
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item" onclick="highlightNav(this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
+        개요
+      </div>
+      <div class="nav-item" onclick="showPage('template', this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><line x1="5" y1="8" x2="11" y2="8"/><line x1="5" y1="5" x2="11" y2="5"/><line x1="5" y1="11" x2="8" y2="11"/></svg>
+        템플릿 분석
+      </div>
+      <div class="nav-item active" onclick="showPage('retention', this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="2,12 5,8 8,10 11,5 14,7"/></svg>
+        리텐션 분석
+      </div>
+      <div class="nav-item" onclick="showPage('retro', this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="8" width="3" height="6" rx="1"/><rect x="6.5" y="5" width="3" height="9" rx="1"/><rect x="11" y="2" width="3" height="12" rx="1"/></svg>
+        회고 작성 분석
+      </div>
+      <div class="nav-item" onclick="highlightNav(this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="10" height="7" rx="2"/><path d="M4 10v2"/><path d="M7 10v2"/><path d="M3 12h5"/><rect x="8" y="6" width="6" height="5" rx="1.5"/></svg>
+        스페이스 분석
+      </div>
+      <div class="nav-item" onclick="highlightNav(this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="2.5"/><path d="M3 13c0-2.8 2.2-5 5-5s5 2.2 5 5"/><line x1="11" y1="2" x2="14" y2="2"/><line x1="12.5" y1="0.5" x2="12.5" y2="3.5"/></svg>
+        회원가입 분석
+      </div>
+    </nav>
+    <div style="border-top: 1px solid rgba(255,255,255,0.07);">
+      <div class="nav-item" onclick="alert('로그아웃')" style="border-left:3px solid transparent;gap:10px;">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:0.7;"><path d="M10 2h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-3"/><polyline points="7,11 10,8 7,5"/><line x1="10" y1="8" x2="2" y2="8"/></svg>
+        로그아웃
+      </div>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="page-heading" style="margin:0;font-size:16px;">리텐션 분석</div>
+        <span id="period-badge-ret" style="font-size:11px;color:var(--text-muted);background:var(--card-bg);border:1px solid var(--border);border-radius:6px;padding:2px 8px;"></span>
+      </div>
+    </header>
+    <div class="page">
+      <div class="section-label" style="padding-top:0;">리텐션 분석</div>
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">평균 회고 생성 주기</div>
+            <div class="card-sub">선택 기간 · 회고를 생성한 활성 유저 기준</div>
+          </div>
+          <div class="tooltip-wrap"><div class="tooltip-icon">?</div><div class="tooltip-box"><div class="tooltip-title">평균 회고 생성 주기</div>선택 기간 동안 유저가 회고를 생성하는 평균 간격이에요. 값이 낮을수록 더 주기적으로 회고를 쓰고 있다는 신호예요.</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px;">
+          <div style="text-align:center;padding:16px;background:var(--page-bg);border-radius:var(--radius-md);position:relative;">
+            <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:6px;">
+              <div style="font-size:11px;color:var(--text-muted);">전체 평균</div>
+              <div class="tooltip-wrap"><div class="tooltip-icon" style="width:12px;height:12px;font-size:9px;">?</div><div class="tooltip-box" style="width:220px;left:50%;transform:translateX(-50%);"><div class="tooltip-title">전체 평균 회고 생성 주기</div>선택 기간 동안 회고를 1회 이상 생성한 전체 활성 유저의 회고 간격 평균이에요. 팀·개인 회고 유형을 모두 포함하여 산출해요.</div></div>
+            </div>
+            <div style="font-size:28px;font-weight:700;color:var(--text-primary);letter-spacing:-0.5px;">8.2일</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:var(--page-bg);border-radius:var(--radius-md);position:relative;">
+            <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:6px;">
+              <div style="font-size:11px;color:var(--text-muted);">팀 회고</div>
+              <div class="tooltip-wrap"><div class="tooltip-icon" style="width:12px;height:12px;font-size:9px;">?</div><div class="tooltip-box" style="width:220px;left:50%;transform:translateX(-50%);"><div class="tooltip-title">팀 회고 평균 생성 주기</div>스페이스 리더가 팀 단위로 생성하는 팀 회고만을 대상으로 계산한 평균 간격이에요. 팀 리텐션 흐름을 파악하는 데 활용해요.</div></div>
+            </div>
+            <div style="font-size:28px;font-weight:700;color:#1677FF;letter-spacing:-0.5px;">9.4일</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:var(--page-bg);border-radius:var(--radius-md);position:relative;">
+            <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:6px;">
+              <div style="font-size:11px;color:var(--text-muted);">개인 회고</div>
+              <div class="tooltip-wrap"><div class="tooltip-icon" style="width:12px;height:12px;font-size:9px;">?</div><div class="tooltip-box" style="width:220px;left:50%;transform:translateX(-50%);"><div class="tooltip-title">개인 회고 평균 생성 주기</div>개인 회고만을 대상으로 계산한 평균 간격이에요. 팀 회고 주기보다 짧을수록 개인 회고 습관이 잘 형성되고 있다는 신호예요.</div></div>
+            </div>
+            <div style="font-size:28px;font-weight:700;color:#00C49F;letter-spacing:-0.5px;">7.1일</div>
+          </div>
+        </div>
+        <div style="margin-top:20px;">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+            <div style="font-size:12px;font-weight:600;color:var(--text-secondary);">생성 주기별 유저 분포</div>
+            <div class="tooltip-wrap"><div class="tooltip-icon" style="width:12px;height:12px;font-size:9px;">?</div><div class="tooltip-box" style="width:260px;"><div class="tooltip-title">생성 주기별 유저 분포</div><p style="margin-bottom:8px;">활성 유저를 평균 회고 생성 간격 기준으로 5개 구간으로 분류한 차트예요.</p><div class="tooltip-title">구간 기준</div><p>7일 이하 (주기적), 8~14일, 15~30일, 31~60일, 60일 초과 (휴면 위험). 주기적 비율이 높을수록 습관 형성이 잘 되고 있는 신호예요.</p></div></div>
+          </div>
+          <div style="position:relative;height:180px;">
+            <canvas id="avg1" role="img" aria-label="생성 주기별 유저 분포">생성 주기별 유저 분포</canvas>
+          </div>
+        </div>
+      </div>
+      <div style="height:32px;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const TD={
+  habit:{bg:'#F6FFED',tc:'#007962',ac:'#00C49F',f:[96,89,78],gen:'4.2회',intv:'6.8일',d30:'81%',time:'23분',comp:'78%',goal:'91%',ins:'제출 완수율 전체 평균의 2.5배. 습관형으로의 전환이 최우선 온보딩 목표.',act:'온보딩 목표를 "7일 내 3회 + 제출 완수 2회"로 상향',nm:'습관형',
+    u:[{i:'김O',nm:'김O연',id:'#2847',mt:'42일차·대표도 94%',tl:[{d:'4/11',l:'진짜 완료',s:'92점',c:'#00C49F'},{d:'4/4',l:'진짜 완료',s:'88점',c:'#00C49F'},{d:'3/28',l:'형식 완료',s:'61점',c:'#A78BFA'},{d:'3/21',l:'진짜 완료',s:'90점',c:'#00C49F'},{d:'3/14',l:'진짜 완료',s:'85점',c:'#00C49F'}],ps:['주말 집중','간격 6~8일 규칙','실행목표 항상 포함']},
+     {i:'이O',nm:'이O준',id:'#3102',mt:'67일차·대표도 91%',tl:[{d:'4/10',l:'진짜 완료',s:'94점',c:'#00C49F'},{d:'4/3',l:'진짜 완료',s:'91점',c:'#00C49F'},{d:'3/27',l:'진짜 완료',s:'87점',c:'#00C49F'},{d:'3/20',l:'형식 완료',s:'58점',c:'#A78BFA'},{d:'3/13',l:'진짜 완료',s:'89점',c:'#00C49F'}],ps:['평일 저녁 패턴','글자 수 많음','streak 4회']},
+     {i:'박O',nm:'박O서',id:'#1988',mt:'31일차·대표도 88%',tl:[{d:'4/9',l:'진짜 완료',s:'86점',c:'#00C49F'},{d:'4/2',l:'형식 완료',s:'63점',c:'#A78BFA'},{d:'3/26',l:'진짜 완료',s:'82점',c:'#00C49F'},{d:'3/19',l:'진짜 완료',s:'88점',c:'#00C49F'},{d:'3/12',l:'형식 완료',s:'54점',c:'#A78BFA'}],ps:['월요일 집중','빠른 습관 형성','가끔 형식 머묾']}]},
+  burst:{bg:'#EDE9FE',tc:'#5B21B6',ac:'#722ED1',f:[91,82,71],gen:'3.8회',intv:'2.1일',d30:'54%',time:'22분',comp:'71%',goal:'83%',ins:'품질은 높지만 공백 후 이탈. 7일 초과 공백 감지 개입 필요.',act:'공백 7일 초과 시 "지난 회고 돌아보기" 자동 트리거',nm:'집중형',
+    u:[{i:'최O',nm:'최O민',id:'#2201',mt:'55일차·대표도 92%',tl:[{d:'4/8',l:'진짜 완료',s:'91점',c:'#00C49F'},{d:'4/6',l:'진짜 완료',s:'89점',c:'#00C49F'},{d:'4/5',l:'형식 완료',s:'67점',c:'#A78BFA'},{d:'3/18',l:'진짜 완료',s:'93점',c:'#00C49F'},{d:'3/16',l:'진짜 완료',s:'88점',c:'#00C49F'}],ps:['2~3일 몰아쓰기','공백 2~3주','복귀 후 품질 낮음']},
+     {i:'정O',nm:'정O아',id:'#2654',mt:'44일차·대표도 89%',tl:[{d:'4/7',l:'진짜 완료',s:'88점',c:'#00C49F'},{d:'4/5',l:'진짜 완료',s:'85점',c:'#00C49F'},{d:'4/4',l:'형식 완료',s:'61점',c:'#A78BFA'},{d:'3/20',l:'진짜 완료',s:'90점',c:'#00C49F'},{d:'3/19',l:'진짜 완료',s:'87점',c:'#00C49F'}],ps:['분기말 집중','streak 6회','공백 전 품질 저하']},
+     {i:'윤O',nm:'윤O혁',id:'#3341',mt:'29일차·대표도 85%',tl:[{d:'4/9',l:'형식 완료',s:'64점',c:'#A78BFA'},{d:'4/7',l:'진짜 완료',s:'84점',c:'#00C49F'},{d:'4/6',l:'진짜 완료',s:'81점',c:'#00C49F'},{d:'3/22',l:'진짜 완료',s:'86점',c:'#00C49F'},{d:'3/21',l:'형식 완료',s:'59점',c:'#A78BFA'}],ps:['월요일 연속 시작','공백 전 형식 증가','품질 저하 신호 가능']}]},
+  passive:{bg:'#FFFBE6',tc:'#92400E',ac:'#FFBB28',f:[74,56,44],gen:'1.9회',intv:'14.3일',d30:'39%',time:'11분',comp:'44%',goal:'52%',ins:'알림 후 24h 내 작성률 82%. 유저별 최적 알림 간격 계산이 핵심.',act:'유저별 평균 간격 기반 개인화 알림 타이밍 자동 계산',nm:'수동형',
+    u:[{i:'한O',nm:'한O진',id:'#1745',mt:'88일차·대표도 93%',tl:[{d:'4/3',l:'형식 완료',s:'54점',c:'#A78BFA'},{d:'3/18',l:'시작 완료',s:'32점',c:'#7DD3FC'},{d:'3/4',l:'형식 완료',s:'58점',c:'#A78BFA'},{d:'2/17',l:'시작 완료',s:'28점',c:'#7DD3FC'},{d:'2/3',l:'형식 완료',s:'51점',c:'#A78BFA'}],ps:['알림 의존','자발적 작성 없음','간격=알림 주기']},
+     {i:'오O',nm:'오O율',id:'#2093',mt:'61일차·대표도 90%',tl:[{d:'4/6',l:'형식 완료',s:'57점',c:'#A78BFA'},{d:'3/23',l:'형식 완료',s:'61점',c:'#A78BFA'},{d:'3/9',l:'시작 완료',s:'31점',c:'#7DD3FC'},{d:'2/23',l:'형식 완료',s:'55점',c:'#A78BFA'},{d:'2/9',l:'시작 완료',s:'29점',c:'#7DD3FC'}],ps:['이벤트 시 2배','14일+ 이탈 위험','팀 기능 효과 예상']},
+     {i:'신O',nm:'신O현',id:'#3018',mt:'37일차·대표도 86%',tl:[{d:'4/5',l:'시작 완료',s:'27점',c:'#7DD3FC'},{d:'3/18',l:'형식 완료',s:'52점',c:'#A78BFA'},{d:'3/1',l:'시작 완료',s:'24점',c:'#7DD3FC'},{d:'2/12',l:'시작 완료',s:'26점',c:'#7DD3FC'},{d:'1/28',l:'형식 완료',s:'49점',c:'#A78BFA'}],ps:['작성 9~11분','L2 장벽 높음','알림 문구 개선 가능']}]},
+  ghost:{bg:'#FFF1F0',tc:'#991B1B',ac:'#FF4D4F',f:[48,29,21],gen:'0.4회',intv:'—',d30:'8%',time:'6분',comp:'21%',goal:'18%',ins:'초기 1~2회 후 급격 이탈. 온보딩 재설계와 윈백 시퀀스 필요.',act:'마지막 작성 후 14일, 30일 시점 자동 윈백 메시지 발송',nm:'유령형',
+    u:[{i:'류O',nm:'류O빈',id:'#1492',mt:'103일차·대표도 95%',tl:[{d:'3/2',l:'시작 완료',s:'21점',c:'#7DD3FC'},{d:'1/14',l:'형식 완료',s:'48점',c:'#A78BFA'},{d:'1/3',l:'시작 완료',s:'19점',c:'#7DD3FC'},{d:'12/20',l:'시작 완료',s:'22점',c:'#7DD3FC'},{d:'12/11',l:'형식 완료',s:'51점',c:'#A78BFA'}],ps:['2회 후 이탈','접속 40일+ 경과','실행목표 거의 없음']},
+     {i:'임O',nm:'임O솔',id:'#2387',mt:'74일차·대표도 91%',tl:[{d:'3/15',l:'시작 완료',s:'23점',c:'#7DD3FC'},{d:'2/28',l:'시작 완료',s:'20점',c:'#7DD3FC'},{d:'2/14',l:'형식 완료',s:'44점',c:'#A78BFA'},{d:'2/1',l:'시작 완료',s:'19점',c:'#7DD3FC'},{d:'1/22',l:'시작 완료',s:'25점',c:'#7DD3FC'}],ps:['재방문 동기 없음','알림 수신 거부','윈백 이메일 대상']},
+     {i:'남O',nm:'남O준',id:'#2941',mt:'51일차·대표도 88%',tl:[{d:'3/22',l:'시작 완료',s:'17점',c:'#7DD3FC'},{d:'3/10',l:'시작 완료',s:'20점',c:'#7DD3FC'},{d:'2/26',l:'시작 완료',s:'15점',c:'#7DD3FC'},{d:'2/14',l:'시작 완료',s:'19점',c:'#7DD3FC'},{d:'2/3',l:'시작 완료',s:'22점',c:'#7DD3FC'}],ps:['5분 이하 반복','L2 미진입','온보딩 미완료 가능성']}]}
+};
+
+let CT='habit', CI=0, CHS=[];
+
+function updatePeriodBadge(){
+  const from=document.getElementById('date-from').value;
+  const to=document.getElementById('date-to').value;
+  if(!from||!to)return;
+  const fmt=s=>s.slice(2).replace(/-/g,'.');
+  const el=document.getElementById('period-badge');
+  if(el)el.textContent=fmt(from)+' ~ '+fmt(to);
+}
+
+function setDateRange(days){
+  const to = new Date();
+  const from = new Date();
+  from.setDate(to.getDate() - days);
+  const fmt = d => d.toISOString().slice(0,10);
+  document.getElementById('date-from').value = fmt(from);
+  document.getElementById('date-to').value = fmt(to);
+}
+
+function switchPeriodTab(tab) {
+  const data = {
+    all:    { f:[[100,'898건'],[75,'674건'],[43,'387건']], n:['▼ 25% 형식 미충족 이탈','▼ 32% 제출 미완료 이탈','→ 30일 유지율 67% 이상 구간 진입'], ok:[false,false,true] },
+    single: { f:[[100,'566건'],[79,'447건'],[51,'289건']], n:['▼ 21% 형식 미충족 — 1회 세션 내 작성 속도 영향','▼ 28% 제출 미완료 이탈','→ 단일 세션 집중 완료 유저'], ok:[false,false,true] },
+    multi:  { f:[[100,'332건'],[68,'226건'],[30,'100건']], n:['▼ 32% 형식 미충족 — 재방문 후에도 미충족','▼ 38% 제출 미완료 — 재방문 후에도 최종 제출 안함','→ 재방문 완료 유저, 30일 유지율 더 높음'], ok:[false,false,true] }
+  };
+  const d = data[tab];
+  const colors = ['#34D399','#A78BFA','#F87171'];
+  for(let i=0;i<3;i++){
+    const fill = document.getElementById('pf'+i);
+    if(fill){ fill.style.width=d.f[i][0]+'%'; fill.textContent=d.f[i][0]+'% · '+d.f[i][1]; fill.style.background=colors[i]; }
+    const note = document.getElementById('pfn'+i);
+    if(note){ note.textContent=d.n[i]; note.className='funnel-note'+(d.ok[i]?' ok':''); }
+  }
+  ['all','single','multi'].forEach(t => {
+    const btn = document.getElementById('ptab-'+t);
+    if(btn) {
+      if(t===tab){ btn.style.background='var(--accent)'; btn.style.borderColor='var(--accent)'; btn.style.color='#fff'; }
+      else { btn.style.background='#fff'; btn.style.borderColor='var(--border)'; btn.style.color='var(--text-secondary)'; }
+    }
+  });
+}
+
+let funnelBase = 'user';
+
+function switchFunnelBase(base) {
+  funnelBase = base;
+  switchFunnelTab('all');
+}
+
+let currentFunnelTab = 'all';
+let currentScope = 'all';
+
+// ── 스코프별 데이터 ──────────────────────────────
+const SCOPE_DATA = {
+  all: {
+    kpi: { total:'24,816', period:'4,820', done:'2,169', rate:'45%', time:'8.2분' },
+    hc1: [46,28,14,8,4], hc1Total:1248,
+    hc2: [[44,45,45,46,46,46],[28,28,28,28,28,28],[14,14,14,14,14,14],[8,8,8,8,8,8],[5,5,4,5,4,4]],
+    tc1: [83.3,2.8,2.8,2.8,5.6,2.8], tc1Users:[1040,35,35,35,70,35],
+    trend1: [[76,74,79,75,77,76,69,71,73,75,73,69],[80,78,83,79,81,80,73,75,77,79,77,73],[68,65,72,66,67,65,56,61,64,65,63,57]],
+    funnel: { f:[[100,'4,820건'],[78,'3,760건'],[61,'2,940건'],[45,'2,169건']], n:['▼ 22% 시작 미완료 회고','▼ 17% 형식 미충족 회고','▼ 16% 제출 미완료 회고',''] },
+    funnelSingle: { f:[[100,'3,037건'],[83,'2,521건'],[67,'2,035건'],[51,'1,549건']], n:['▼ 17% 1회 세션 내 미완료','▼ 16% 형식 미충족','▼ 16% 제출 미완료',''] },
+    funnelMulti:  { f:[[100,'1,783건'],[69,'1,230건'],[51,'909건'],[35,'624건']],  n:['▼ 31% 재방문에도 시작 미완료','▼ 18% 형식 미충족','▼ 16% 제출 미완료',''] }
+  },
+  team: {
+    kpi: { total:'11,204', period:'2,180', done:'1,012', rate:'46%', time:'9.1분' },
+    hc1: [38,32,16,9,5], hc1Total:680,
+    hc2: [[36,37,37,38,38,38],[32,32,31,31,31,31],[16,16,16,16,16,16],[11,10,10,10,10,10],[5,5,6,5,5,5]],
+    tc1: [74.1,4.2,4.2,4.2,9.3,4.0], tc1Users:[504,29,29,29,63,26],
+    trend1: [[80,78,83,79,81,80,73,75,77,79,77,73],[82,80,85,81,83,82,75,77,79,81,79,75],[75,72,79,74,76,74,63,68,71,73,71,67]],
+    funnel: { f:[[100,'2,180건'],[80,'1,744건'],[63,'1,373건'],[46,'1,003건']], n:['▼ 20% 시작 미완료 회고','▼ 17% 형식 미충족 회고','▼ 17% 제출 미완료 회고',''] },
+    funnelSingle: { f:[[100,'1,373건'],[84,'1,153건'],[68,'933건'],[52,'715건']], n:['▼ 16% 1회 세션 내 미완료','▼ 16% 형식 미충족','▼ 16% 제출 미완료',''] },
+    funnelMulti:  { f:[[100,'807건'],[73,'589건'],[55,'444건'],[36,'291건']],    n:['▼ 27% 재방문에도 시작 미완료','▼ 18% 형식 미충족','▼ 19% 제출 미완료',''] }
+  },
+  personal: {
+    kpi: { total:'13,612', period:'2,640', done:'1,157', rate:'44%', time:'7.4분' },
+    hc1: [52,25,12,7,4], hc1Total:568,
+    hc2: [[50,51,51,52,52,52],[25,25,24,24,24,24],[12,12,12,12,12,12],[8,7,8,7,7,7],[5,5,5,5,5,5]],
+    tc1: [90.2,1.8,1.8,1.8,2.8,1.6], tc1Users:[512,10,10,10,16,9],
+    trend1: [[71,69,74,70,72,71,64,66,68,70,68,64],[75,73,78,74,76,75,68,70,72,74,72,68],[62,59,66,60,61,59,50,55,58,59,57,53]],
+    funnel: { f:[[100,'2,640건'],[76,'2,006건'],[59,'1,558건'],[44,'1,162건']], n:['▼ 24% 시작 미완료 회고','▼ 17% 형식 미충족 회고','▼ 15% 제출 미완료 회고',''] },
+    funnelSingle: { f:[[100,'1,663건'],[82,'1,364건'],[66,'1,098건'],[50,'832건']], n:['▼ 18% 1회 세션 내 미완료','▼ 16% 형식 미충족','▼ 16% 제출 미완료',''] },
+    funnelMulti:  { f:[[100,'977건'],[66,'645건'],[47,'459건'],[34,'333건']],     n:['▼ 34% 재방문에도 시작 미완료','▼ 19% 형식 미충족','▼ 13% 제출 미완료',''] }
+  }
+};
+
+function switchFunnelTab(tab) {
+  currentFunnelTab = tab;
+  const d = SCOPE_DATA[currentScope];
+  const fData = tab==='single' ? d.funnelSingle : tab==='multi' ? d.funnelMulti : d.funnel;
+  const colors = ['#00C49F','#34D399','#A78BFA','#F87171'];
+  for(let i=0;i<4;i++){
+    const fill=document.getElementById('rf'+i);
+    if(fill){ fill.style.width=fData.f[i][0]+'%'; fill.textContent=fData.f[i][0]+'% · '+fData.f[i][1]; fill.style.background=colors[i]; }
+    const note=document.getElementById('rn'+i);
+    if(note){ note.textContent=fData.n[i]; note.className='funnel-note'+(fData.n[i].startsWith('→')?' ok':''); }
+  }
+  ['all','single','multi'].forEach(t => {
+    const btn=document.getElementById('ftab-'+t);
+    if(btn){
+      if(t===tab){ btn.style.background='var(--accent)'; btn.style.borderColor='var(--accent)'; btn.style.color='#fff'; }
+      else{ btn.style.background='#fff'; btn.style.borderColor='var(--border)'; btn.style.color='var(--text-secondary)'; }
+    }
+  });
+}
+
+function renderCharts(){
+  CHS.forEach(c=>{try{c.destroy()}catch(e){}});CHS=[];
+  window.chartHC1=new Chart(document.getElementById('hc1'),{type:'bar',data:{labels:['주기적 (7일↓)','격주~월 (8~30일)','분기적 (31~90일)','비정기 (91~180일)','휴면 (181일+)'],datasets:[{data:[46,28,14,8,4],backgroundColor:['#007962','#00C49F','#57D7C1','#FFBB28','#FD8A8D'],borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const total=1248;const count=Math.round(total*c.parsed.y/100);return c.parsed.y+'%  |  '+count.toLocaleString()+'명';}}}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#8A98A6',maxRotation:0}},y:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:11},color:'#8A98A6',callback:v=>v+'%'},max:60}}}});
+  const hc2Months=(()=>{const now=new Date();const labels=[];for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);if(i===0)labels.push('이번 달');else if(i===1)labels.push('지난 달');else labels.push((d.getMonth()+1)+'월');}return labels;})();
+  window.chartHC2=new Chart(document.getElementById('hc2'),{type:'bar',data:{labels:hc2Months,datasets:[{label:'주기적',data:[44,45,45,46,46,46],backgroundColor:'#007962',stack:'s'},{label:'격주~월',data:[28,28,28,28,28,28],backgroundColor:'#00C49F',stack:'s'},{label:'분기적',data:[14,14,14,14,14,14],backgroundColor:'#57D7C1',stack:'s'},{label:'비정기',data:[8,8,8,8,8,8],backgroundColor:'#FFBB28',stack:'s'},{label:'휴면',data:[5,5,4,5,4,4],backgroundColor:'#FD8A8D',stack:'s'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{const total=1248;const count=Math.round(total*ctx.parsed.y/100);return ctx.dataset.label+':  '+ctx.parsed.y+'%  |  '+count.toLocaleString()+'명';}}}},scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:10},color:'#8A98A6'}},y:{stacked:true,max:100,grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:10},color:'#8A98A6',callback:v=>v+'%'}}}}});
+  const tc1Labels=['0-5분','5-10분','10-15분','15-20분','20-25분','30분 이상'];
+  const tc1Data=[83.3,2.8,2.8,2.8,5.6,2.8];
+  const tc1Users=[1040,35,35,35,70,35];
+  const tc1Colors=['#4EA8F5','#00C49F','#FFBB28','#FF7F50','#A78BFA','#7DD3FC'];
+  const tc1Plugin={id:'outerLabels',afterDraw(chart){
+    const{ctx,chartArea:{width,height}}=chart;
+    const arc0=chart.getDatasetMeta(0).data[0];
+    if(!arc0)return;
+    const cx=arc0.x,cy=arc0.y;
+    ctx.save();
+    chart.getDatasetMeta(0).data.forEach((arc,i)=>{
+      if(tc1Data[i]<0.5)return;
+      const angle=(arc.startAngle+arc.endAngle)/2;
+      const r=arc.outerRadius+22;
+      const x=cx+Math.cos(angle)*r;
+      const y=cy+Math.sin(angle)*r;
+      ctx.fillStyle=tc1Colors[i];
+      ctx.font='500 11px Noto Sans KR,sans-serif';
+      ctx.textAlign=x>cx?'left':'right';
+      ctx.textBaseline='middle';
+      ctx.fillText(tc1Labels[i]+' '+tc1Data[i]+'%',x,y);
+    });
+    ctx.restore();
+  }};
+  window.chartTC1=new Chart(document.getElementById('tc1'),{type:'pie',data:{labels:tc1Labels,datasets:[{data:tc1Data,backgroundColor:tc1Colors,borderColor:'#fff',borderWidth:2,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:30,bottom:30,left:90,right:90}},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+tc1Data[ctx.dataIndex]+'%  |  '+tc1Users[ctx.dataIndex].toLocaleString()+'명'}}}},plugins:[tc1Plugin]});
+CHS.push(window.chartHC1,window.chartHC2,window.chartTC1);
+  // 월별 완료율 추이 차트
+  const trend1Months=(()=>{const now=new Date();const labels=[];for(let i=11;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);if(i===0)labels.push('이번 달');else if(i===1)labels.push('지난 달');else labels.push((d.getMonth()+1)+'월');}return labels;})();
+  window.chartTrend1=new Chart(document.getElementById('trend1'), {
+    type: 'line',
+    data: {
+      labels: trend1Months,
+      datasets: [
+        {
+          label: '전체 완료율',
+          data: [72,70,75,71,72,71,62,66,69,70,68,63],
+          borderColor: getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim()||'#8A98A6',
+          backgroundColor: 'transparent',
+          borderWidth: 2, pointRadius: 4, pointBackgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim()||'#8A98A6',
+          pointBorderColor: '#fff', pointBorderWidth: 2, tension: 0.4,
+          borderDash: [5,3], fill: false
+        },
+        {
+          label: '팀 완료율',
+          data: [80,78,83,79,81,80,73,75,77,79,77,73],
+          borderColor: '#1677FF',
+          backgroundColor: function(ctx) {
+            var chart = ctx.chart;
+            var c = chart.ctx, ca = chart.chartArea;
+            if (!ca) return 'rgba(22,119,255,0.1)';
+            var g = c.createLinearGradient(0, ca.top, 0, ca.bottom);
+            g.addColorStop(0, 'rgba(22,119,255,0.18)');
+            g.addColorStop(1, 'rgba(22,119,255,0.01)');
+            return g;
+          },
+          borderWidth: 2, pointRadius: 5, pointBackgroundColor: '#1677FF',
+          pointBorderColor: '#fff', pointBorderWidth: 2, tension: 0.4, fill: true
+        },
+        {
+          label: '개인 완료율',
+          data: [68,65,72,66,67,65,56,61,64,65,63,57],
+          borderColor: '#00C49F',
+          backgroundColor: function(ctx) {
+            var chart = ctx.chart;
+            var c = chart.ctx, ca = chart.chartArea;
+            if (!ca) return 'rgba(0,196,159,0.1)';
+            var g = c.createLinearGradient(0, ca.top, 0, ca.bottom);
+            g.addColorStop(0, 'rgba(0,196,159,0.18)');
+            g.addColorStop(1, 'rgba(0,196,159,0.01)');
+            return g;
+          },
+          borderWidth: 2, pointRadius: 5, pointBackgroundColor: '#00C49F',
+          pointBorderColor: '#fff', pointBorderWidth: 2, tension: 0.4, fill: true
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: ctx => ctx[0].label,
+            label: ctx => {
+              const i = ctx.dataIndex;
+              const teamTotal =  [210,198,230,215,220,205,180,195,205,210,200,190][i];
+              const indTotal =   [180,170,195,185,190,175,155,165,175,180,170,160][i];
+              const rate = ctx.parsed.y;
+              if(ctx.dataset.label === '전체 완료율') {
+                const tot = teamTotal + indTotal;
+                const done = Math.round(tot * rate / 100);
+                return ['전체  ' + tot + '건 중  ' + done + '건 완료', '완료율  ' + rate + '%'];
+              } else if(ctx.dataset.label === '팀 완료율') {
+                const done = Math.round(teamTotal * rate / 100);
+                return ['팀 회고  ' + teamTotal + '건 중  ' + done + '건 완료', '완료율  ' + rate + '%'];
+              } else {
+                const done = Math.round(indTotal * rate / 100);
+                return ['개인 회고  ' + indTotal + '건 중  ' + done + '건 완료', '완료율  ' + rate + '%'];
+              }
+            }
+          }
+        }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 12 }, color: '#8A98A6' } },
+        y: { min: 0, max: 100, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { size: 12 }, color: '#8A98A6', callback: function(v){ return v+'%'; }, stepSize: 25 } }
+      }
+    }
+  });
+
+  // 생성 주기별 유저 분포 차트
+  new Chart(document.getElementById('avg1'),{type:'bar',data:{labels:['1~3일','4~7일','8~14일','15~30일','31일+'],datasets:[{label:'전체',data:[18,28,24,18,12],backgroundColor:['#007962','#00C49F','#57D7C1','#FFBB28','#FD8A8D'],borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{const total=1248;const count=Math.round(total*ctx.parsed.y/100);return ctx.parsed.y+'%  |  '+count.toLocaleString()+'명';}}}},scales:{x:{grid:{display:false},ticks:{font:{size:11},color:'#8A98A6'}},y:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:10},color:'#8A98A6',callback:v=>v+'%'},beginAtZero:true,max:40}}}});
+
+}
+
+function renderUser(){
+  const t=TD[CT],u=t.u[CI];
+  const av=document.getElementById('user-avatar');
+  if(av){av.textContent=u.i; av.style.background=t.bg; av.style.color=t.tc;}
+  const nm=document.getElementById('user-name');
+  if(nm)nm.innerHTML=u.nm+' <span style="font-size:10px;font-weight:400;color:#8A98A6;">'+u.id+'</span>';
+  const mt=document.getElementById('user-meta');
+  if(mt)mt.textContent=u.mt;
+  const pg=document.getElementById('user-page');
+  if(pg)pg.textContent=(CI+1)+' / 3';
+  const tl=document.getElementById('user-timeline');
+  if(tl)tl.innerHTML=u.tl.map(r=>`
+    <div class="tl-row">
+      <span class="tl-date">${r.d}</span>
+      <div class="tl-dot" style="background:${r.c};"></div>
+      <div class="tl-bar" style="background:${r.c}22;">
+        <span class="tl-label" style="color:${r.c};">${r.l}</span>
+        <span class="tl-score" style="color:${r.c};">${r.s}</span>
+      </div>
+    </div>`).join('');
+  const tg=document.getElementById('user-tags');
+  if(tg)tg.innerHTML=u.ps.map(p=>`<span class="tag" style="background:${t.bg};color:${t.tc};">${p}</span>`).join('');
+}
+
+function selType(type){
+  CT=type; CI=0;
+  ['habit','burst','passive','ghost'].forEach(k=>{const el=document.getElementById('tc-'+k);if(el)el.classList.remove('active');});
+  const sel=document.getElementById('tc-'+type);
+  if(sel)sel.classList.add('active');
+  const t=TD[type];
+  const tt=document.getElementById('type-title');
+  if(tt)tt.textContent=t.nm+' — 완수율 퍼널';
+  const fc=['#34D399','#A78BFA','#F87171'],tc=['#fff','#fff','#fff'];
+  [0,1,2].forEach(i=>{const b=document.getElementById('tf'+i);if(b){b.style.width=t.f[i]+'%';b.style.background=fc[i];b.style.color=tc[i];b.textContent=t.f[i]+'%';}});
+  ['gen','intv','d30','time','comp','goal'].forEach(k=>{const el=document.getElementById('ts-'+k);if(el)el.textContent=t[k];});
+  const ti=document.getElementById('type-insight');
+  if(ti)ti.textContent=t.ins;
+  const ta=document.getElementById('type-action');
+  if(ta)ta.textContent='▶ '+t.act;
+  renderUser();
+}
+
+function prevUser(){CI=(CI-1+3)%3;renderUser();}
+function nextUser(){CI=(CI+1)%3;renderUser();}
+
+function setTDateRange(days){
+  const to=new Date(); const from=new Date();
+  from.setDate(to.getDate()-days);
+  const fmt=d=>d.toISOString().slice(0,10);
+  document.getElementById('tdate-from').value=fmt(from);
+  document.getElementById('tdate-to').value=fmt(to);
+}
+
+function switchTScope(scope){
+  ['all','team','personal'].forEach(s=>{
+    const btn=document.getElementById('tscope-'+s);
+    if(!btn) return;
+    if(s===scope){ btn.style.background='#fff'; btn.style.color='var(--text-primary)'; btn.style.fontWeight='600'; btn.style.boxShadow='0 1px 3px rgba(0,0,0,0.08)'; }
+    else{ btn.style.background='transparent'; btn.style.color='var(--text-muted)'; btn.style.fontWeight='500'; btn.style.boxShadow='none'; }
+  });
+}
+
+function showPage(page, el) {
+  document.getElementById('page-retro').style.display = 'none';
+  document.getElementById('page-retention').style.display = 'none';
+  document.getElementById('page-template').style.display = 'none';
+
+  if(page === 'retention') {
+    document.getElementById('page-retention').style.display = 'flex';
+    setTimeout(() => {
+      if(window.avg1Chart) window.avg1Chart.destroy();
+      window.avg1Chart = new Chart(document.getElementById('avg1'), {
+        type:'bar', data:{labels:['1~3일','4~7일','8~14일','15~30일','31일+'], datasets:[{data:[18,28,24,18,12], backgroundColor:['#007962','#00C49F','#57D7C1','#FFBB28','#FD8A8D'], borderRadius:6}]},
+        options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>{const count=Math.round(1248*ctx.parsed.y/100); return ctx.parsed.y+'%  |  '+count.toLocaleString()+'명';} }}}, scales:{x:{grid:{display:false}, ticks:{font:{size:11}, color:'#8A98A6'}}, y:{grid:{color:'rgba(0,0,0,0.05)'}, ticks:{font:{size:10}, color:'#8A98A6', callback:v=>v+'%'}, beginAtZero:true, max:40}}}
+      });
+    }, 50);
+  } else if(page === 'template') {
+    document.getElementById('page-template').style.display = 'flex';
+  } else {
+    document.getElementById('page-retro').style.display = 'flex';
+  }
+
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if(el) el.classList.add('active');
+}
+
+function switchScope(scope) {
+  currentScope = scope;
+  ['all','team','personal'].forEach(s => {
+    const btn=document.getElementById('scope-'+s);
+    if(!btn) return;
+    if(s===scope){ btn.style.background='#fff'; btn.style.color='var(--text-primary)'; btn.style.fontWeight='600'; btn.style.boxShadow='0 1px 3px rgba(0,0,0,0.08)'; }
+    else{ btn.style.background='transparent'; btn.style.color='var(--text-muted)'; btn.style.fontWeight='500'; btn.style.boxShadow='none'; }
+  });
+
+  const d = SCOPE_DATA[scope];
+
+  // KPI
+  const kv = Object.values(d.kpi);
+  ['kpi-total','kpi-period','kpi-done','kpi-rate','kpi-time'].forEach((id,i)=>{ const el=document.getElementById(id); if(el) el.textContent=kv[i]; });
+
+  // hc1
+  if(window.chartHC1){ window.chartHC1.data.datasets[0].data=d.hc1; window.chartHC1.update(); }
+
+  // hc2
+  if(window.chartHC2){ d.hc2.forEach((arr,i)=>{ window.chartHC2.data.datasets[i].data=arr; }); window.chartHC2.update(); }
+
+  // tc1
+  if(window.chartTC1){ window.chartTC1.data.datasets[0].data=d.tc1; window.chartTC1.update(); }
+
+  // trend1
+  if(window.chartTrend1){ d.trend1.forEach((arr,i)=>{ window.chartTrend1.data.datasets[i].data=arr; }); window.chartTrend1.update(); }
+
+  // 퍼널
+  switchFunnelTab(currentFunnelTab);
+}
+
+function highlightNav(el){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+}
+
+window.addEventListener('load',()=>{
+  renderCharts();
+  renderUser();
+  updatePeriodBadge();
+});
+</script>
+</body>
+</html>
