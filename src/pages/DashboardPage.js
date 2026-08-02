@@ -21,6 +21,7 @@ import WritingTimeAnalytics from '../components/RetrospectWritingAnalytics';
 import SpaceAnalytics from '../components/SpaceAnalytics';
 import RegistrationAnalytics from '../components/RegistrationAnalytics';
 import RetrospectCycleAnalytics from '../components/RetrospectCycleAnalytics';
+import NoticeManagement from '../components/NoticeManagement';
 import './DashboardPage.css';
 import api from '../utils/api';
 
@@ -186,6 +187,8 @@ const DashboardPage = () => {
                 return <RegistrationAnalytics dateRange={dateRange} />;
             case 'creation-cycle':
                 return <RetrospectCycleAnalytics dateRange={dateRange} />;
+            case 'notices':
+                return <NoticeManagement />;
             default:
                 return <div>페이지를 선택해주세요.</div>;
         }
@@ -201,7 +204,7 @@ const DashboardPage = () => {
                     mode="inline"
                     selectedKeys={[selectedMenu]}
                     items={menuItems}
-                    onClick={({ key }) => (key === 'notices' ? navigate('/notices') : setSelectedMenu(key))}
+                    onClick={({ key }) => setSelectedMenu(key)}
                     className="dashboard-menu"
                 />
             </Sider>

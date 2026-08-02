@@ -1,7 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-    Layout,
-    Menu,
     Table,
     Button,
     Modal,
@@ -14,33 +12,16 @@ import {
     Tag,
     Popconfirm,
     message,
-    Typography,
 } from 'antd';
-import {
-    DashboardOutlined,
-    NotificationOutlined,
-    LogoutOutlined,
-    PlusOutlined,
-    EditOutlined,
-    DeleteOutlined,
-    PushpinFilled,
-} from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { PlusOutlined, EditOutlined, DeleteOutlined, PushpinFilled } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
 import { NoticeCategoryType, NoticeCategoryLabel, NoticeCategoryColor } from '../constants/noticeCategoryType';
-import './DashboardPage.css';
 
-const { Header, Sider, Content } = Layout;
-const { Title } = Typography;
 const { RangePicker } = DatePicker;
 const { TextArea } = Input;
 
-const NoticeListPage = () => {
-    const { logout } = useAuth();
-    const navigate = useNavigate();
-
+const NoticeManagement = () => {
     const [notices, setNotices] = useState([]);
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
@@ -70,11 +51,6 @@ const NoticeListPage = () => {
     useEffect(() => {
         fetchNotices(page, pageSize);
     }, [fetchNotices, page, pageSize]);
-
-    const handleLogout = () => {
-        logout();
-        navigate('/login');
-    };
 
     const openCreateModal = () => {
         setEditingNoticeId(null);
@@ -219,63 +195,29 @@ const NoticeListPage = () => {
     ];
 
     return (
-        <Layout style={{ minHeight: '100vh' }}>
-            <Sider width={220} className="dashboard-sider">
-                <div className="logo">
-                    <h2>Layer 어드민</h2>
-                </div>
-                <Menu
-                    mode="inline"
-                    selectedKeys={['notices']}
-                    className="dashboard-menu"
-                    items={[
-                        { key: 'dashboard', icon: <DashboardOutlined />, label: '대시보드' },
-                        { key: 'notices', icon: <NotificationOutlined />, label: '공지사항 관리' },
-                    ]}
-                    onClick={({ key }) => (key === 'dashboard' ? navigate('/dashboard') : null)}
-                />
-            </Sider>
+        <div className="notice-management">
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+                <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>
+                    공지 작성
+                </Button>
+            </div>
 
-            <Layout>
-                <Header className="dashboard-header">
-                    <div className="header-content">
-                        <div className="header-left">
-                            <Title level={4} style={{ margin: 0 }}>
-                                공지사항 관리
-                            </Title>
-                        </div>
-                        <div className="header-right">
-                            <Space>
-                                <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>
-                                    공지 작성
-                                </Button>
-                                <Button icon={<LogoutOutlined />} onClick={handleLogout} danger>
-                                    로그아웃
-                                </Button>
-                            </Space>
-                        </div>
-                    </div>
-                </Header>
-
-                <Content className="dashboard-content">
-                    <Table
-                        rowKey="id"
-                        columns={columns}
-                        dataSource={notices}
-                        loading={loading}
-                        pagination={{
-                            current: page,
-                            pageSize,
-                            total,
-                            showSizeChanger: true,
-                            onChange: (nextPage, nextPageSize) => {
-                                setPage(nextPage);
-                                setPageSize(nextPageSize);
-                            },
-                        }}
-                    />
-                </Content>
-            </Layout>
+            <Table
+                rowKey="id"
+                columns={columns}
+                dataSource={notices}
+                loading={loading}
+                pagination={{
+                    current: page,
+                    pageSize,
+                    total,
+                    showSizeChanger: true,
+                    onChange: (nextPage, nextPageSize) => {
+                        setPage(nextPage);
+                        setPageSize(nextPageSize);
+                    },
+                }}
+            />
 
             <Modal
                 title={editingNoticeId ? '공지사항 수정' : '공지사항 작성'}
@@ -320,8 +262,8 @@ const NoticeListPage = () => {
                     </Space>
                 </Form>
             </Modal>
-        </Layout>
+        </div>
     );
 };
 
-export default NoticeListPage;
+export default NoticeManagement;
