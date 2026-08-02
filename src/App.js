@@ -4,6 +4,7 @@ import { ConfigProvider } from 'antd';
 import koKR from 'antd/locale/ko_KR';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
+import NoticeListPage from './pages/NoticeListPage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import './App.css';
 
@@ -26,6 +27,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <DashboardPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/notices"
+                element={
+                  <ProtectedRoute>
+                    <NoticeListPage />
                   </ProtectedRoute>
                 }
               />

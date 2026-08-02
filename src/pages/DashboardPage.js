@@ -10,6 +10,7 @@ import {
     AppstoreOutlined,
     EditOutlined,
     QuestionCircleOutlined,
+    NotificationOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -108,6 +109,11 @@ const DashboardPage = () => {
             icon: <BarChartOutlined />,
             label: '회고 생성 주기',
         },
+        {
+            key: 'notices',
+            icon: <NotificationOutlined />,
+            label: '공지사항 관리',
+        },
     ];
 
     const renderContent = () => {
@@ -195,7 +201,7 @@ const DashboardPage = () => {
                     mode="inline"
                     selectedKeys={[selectedMenu]}
                     items={menuItems}
-                    onClick={({ key }) => setSelectedMenu(key)}
+                    onClick={({ key }) => (key === 'notices' ? navigate('/notices') : setSelectedMenu(key))}
                     className="dashboard-menu"
                 />
             </Sider>
