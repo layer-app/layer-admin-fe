@@ -11,6 +11,7 @@ import {
     EditOutlined,
     QuestionCircleOutlined,
     NotificationOutlined,
+    PictureOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -22,6 +23,7 @@ import SpaceAnalytics from '../components/SpaceAnalytics';
 import RegistrationAnalytics from '../components/RegistrationAnalytics';
 import RetrospectCycleAnalytics from '../components/RetrospectCycleAnalytics';
 import NoticeManagement from '../components/NoticeManagement';
+import PopupManagement from '../components/PopupManagement';
 import './DashboardPage.css';
 import api from '../utils/api';
 
@@ -115,6 +117,11 @@ const DashboardPage = () => {
             icon: <NotificationOutlined />,
             label: '공지사항 관리',
         },
+        {
+            key: 'popups',
+            icon: <PictureOutlined />,
+            label: '팝업 관리',
+        },
     ];
 
     const renderContent = () => {
@@ -189,6 +196,8 @@ const DashboardPage = () => {
                 return <RetrospectCycleAnalytics dateRange={dateRange} />;
             case 'notices':
                 return <NoticeManagement />;
+            case 'popups':
+                return <PopupManagement />;
             default:
                 return <div>페이지를 선택해주세요.</div>;
         }

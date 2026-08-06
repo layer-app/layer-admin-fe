@@ -232,14 +232,14 @@ const NoticeManagement = () => {
             >
                 <Form form={form} layout="vertical">
                     <Form.Item name="title" label="제목" rules={[{ required: true, message: '제목을 입력해주세요.' }]}>
-                        <Input placeholder="공지사항 제목" />
+                        <Input placeholder="공지사항 제목" maxLength={100} showCount />
                     </Form.Item>
                     <Form.Item
                         name="content"
                         label="본문"
                         rules={[{ required: true, message: '본문을 입력해주세요.' }]}
                     >
-                        <TextArea rows={8} placeholder="공지사항 본문" />
+                        <TextArea rows={8} placeholder="공지사항 본문" maxLength={800} showCount />
                     </Form.Item>
                     <Form.Item name="category" label="카테고리" rules={[{ required: true }]}>
                         <Select
