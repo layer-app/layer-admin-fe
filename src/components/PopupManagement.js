@@ -117,10 +117,9 @@ const PopupManagement = () => {
     const handleToggleActive = async (popupId, nextActive) => {
         try {
             await api.patch(`/admin/popup/${popupId}/active`, { isActive: nextActive });
-            message.success(nextActive ? '팝업이 활성화되었습니다.' : '팝업이 비활성화되었습니다.');
-            setPopups((prev) =>
-                prev.map((popup) => (popup.id === popupId ? { ...popup, isActive: nextActive } : popup))
-            );
+            message.success(nextActive ? '팝업이 활성화되었습니다. (다른 팝업은 자동으로 비활성화됩니다)' : '팝업이 비활성화되었습니다.');
+            // 팝업은 항상 최대 1개만 활성 상태라, 활성화 시 다른 행들도 서버에서 함께 꺼지므로 목록을 다시 불러온다.
+            fetchPopups(page, pageSize);
         } catch (error) {
             message.error('노출 상태 변경 중 오류가 발생했습니다.');
         }
@@ -234,7 +233,12 @@ const PopupManagement = () => {
                     >
                         <Input prefix={<LinkOutlined />} placeholder="https://example.com (선택)" />
                     </Form.Item>
-                    <Form.Item name="isActive" label="노출 여부" valuePropName="checked">
+                    <Form.Item
+                        name="isActive"
+                        label="노출 여부"
+                        valuePropName="checked"
+                        tooltip="팝업은 항상 최대 1개만 노출됩니다. 이 팝업을 켜면 기존에 노출 중이던 다른 팝업은 자동으로 꺼집니다."
+                    >
                         <Switch />
                     </Form.Item>
                 </Form>
